@@ -1,0 +1,12 @@
+Montador dos condigos em assembly:[
+1-ler os arquivo.
+2-passar tudo mara maiusculo e descartando comentarios.
+3- separar os tokens e contar as linhas que estao
+
+
+estrutura de dados:
+array de diretivas e rotulos e instrucoes:
+cada elemento é uma linha, tem int, e quatro campos de string
+modelo de um elemento do array:
+    int linha
+    strings |ROTULO|INSTRUCAO|P1|P2|
