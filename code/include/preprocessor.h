@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 
-typedef std::vector< std::tuple<uint16_t,std::string> > tuple_list;
+typedef std::vector< std::tuple<uint16_t, std::vector< std::string> > > tuple_list;
 
 class PreProcessor
 {
