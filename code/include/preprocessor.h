@@ -1,13 +1,12 @@
 #ifndef PREPROCESSOR_H
 #define PREPROCESSOR_H
+
 #include <iostream>
-#include <string>
-#include <tuple>
-#include <map>
 #include <fstream>
 #include <sstream>
-#include <cstdint>
-#include <vector>
+#include <tuple>
+#include <iomanip>
+#include <algorithm>
 
 typedef std::vector< std::tuple<uint16_t,std::string> > tuple_list;
 

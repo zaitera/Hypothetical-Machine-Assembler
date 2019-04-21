@@ -35,6 +35,7 @@ tuple_list  PreProcessor::removeEmptySpacesAndLines(void)
         {
             line_to_tuple.append(word);
             line_to_tuple.append(" ");
+            std::transform(line_to_tuple.begin(), line_to_tuple.end(),line_to_tuple.begin(), ::toupper);
         }
         if(!(text_line.empty()))
         {
@@ -50,7 +51,7 @@ void PreProcessor::printTupleListFile(tuple_list tuple_file)
 {
     for(uint16_t i = 0; i != tuple_file.size(); i++ )
     {
-        std::cout << std::get<0>(tuple_file[i])+1 << " " <<std::get<1>(tuple_file[i]) << std::endl;
+        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(tuple_file[i])+1 << " " <<std::get<1>(tuple_file[i]) << std::endl;
     } 
 }
 
