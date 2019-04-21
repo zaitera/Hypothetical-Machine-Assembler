@@ -40,10 +40,10 @@ tuple_list  PreProcessor::removeEmptySpacesAndLines(void)
         if(!(text_line.empty()))
         {
             current_tuple = make_tuple(line_cont,line_to_tuple); 
-            line_cont++;
             file_tuple.push_back(current_tuple);
             line_to_tuple.clear();
         }
+        line_cont++;
     }
     return file_tuple;
 }
