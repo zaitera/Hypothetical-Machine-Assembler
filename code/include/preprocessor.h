@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <bits/stdc++.h> 
-#define SPECIAL_CHARACTERS ',',':','&'
+#define SPECIAL_CHARACTERS ',',':','&',';'
 
 //! Data type, made of a tuple <int, and a vector of strings>
 /*!
@@ -73,7 +73,7 @@ private:
         and identifies the special characters, split the words between them.
         This method return a TupleList, our optimized way of representing the source code .
     */
-    TupleList removeEmptySpacesAndLines(void);
+    TupleList removeUselessInfos(void);
 
     //! Private method, receives TupleList (the file being processed)
     /*!
@@ -82,6 +82,8 @@ private:
     void printTupleListFile(void);
 
     void printTupleTable(Table);
+    void removeComments(void);
+    
     Table parseDirectiveEQU(void);
     std::string findInTable(Table, std::string);
     void processEQUs(void);
