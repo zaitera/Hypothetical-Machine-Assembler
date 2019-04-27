@@ -200,16 +200,17 @@ void PreProcessor::processIFs(void)
 
 void PreProcessor::removeComments(void)
 {
+    bool found = false;
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {                   
-        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
+        found = false;
+        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size() && !found ; j++ )
         {          
             if(std::get<1>(this->file_being_processed[i])[j] == ";")
             {
                 std::get<1>(this->file_being_processed[i]).erase(std::get<1>(this->file_being_processed[i]).begin()+j, std::get<1>(this->file_being_processed[i]).end()-1);
                 std::get<1>(this->file_being_processed[i]).pop_back();
-                i++;
-                j=0;
+                found = true;
             }
         }   
     }
