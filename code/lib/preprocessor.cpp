@@ -78,12 +78,12 @@ std::vector<std::string> PreProcessor::splitString(std::string word)
     return splitted_words;
 }
 
-tuple_list  PreProcessor::removeEmptySpacesAndLines(void)
+TupleList  PreProcessor::removeEmptySpacesAndLines(void)
 { 
     std::string text_line, word;
     std::vector <std::string> sentence;
     std::tuple<uint16_t,std::vector <std::string>> current_tuple;
-    tuple_list file_tuple;
+    TupleList tuple_file;
     uint16_t line_cont = 0;
     while (std::getline(*(this->source_code_file), text_line))
     {
@@ -92,35 +92,95 @@ tuple_list  PreProcessor::removeEmptySpacesAndLines(void)
         {
             std::transform(word.begin(), word.end(),word.begin(), ::toupper);
             auto aux = splitString(word);
-            if(!(text_line.empty()))
-            {
-                sentence.insert(sentence.end(),aux.begin(),aux.end());
-            }
+            sentence.insert(sentence.end(),aux.begin(),aux.end());
         }
         if(!(text_line.empty()))
         {
             current_tuple = make_tuple(line_cont,sentence); 
-            file_tuple.push_back(current_tuple);
+            tuple_file.push_back(current_tuple);
             sentence.clear();
         }
         line_cont++;
     }
-    return file_tuple;
+    return tuple_file;
 }
 
-void PreProcessor::printTupleListFile(tuple_list tuple_file)
+void PreProcessor::printTupleListFile()
 {
-    for(size_t i = 0; i != tuple_file.size(); i++ )
+    std::cout << "_____________________"<<std::endl;
+    
+    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
-        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(tuple_file[i])+1 << " ";
-        for(size_t j = 0; j != std::get<1>(tuple_file[i]).size(); j++ )
-            std::cout << std::get<1>(tuple_file[i])[j] << " ";
+        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
+        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
+            std::cout << std::get<1>(this->file_being_processed[i])[j] << " ";
         std::cout << std::endl;
     } 
+    std::cout << "_____________________"<<std::endl;
+
+}
+void PreProcessor::printTupleTable(Table tuple_table)
+{
+    std::cout << "_____________________"<<std::endl;
+    for(size_t i = 0; i != tuple_table.size(); i++ )
+    {
+        std::cout << std::get<0>(tuple_table[i]) << " = " << std::get<1>(tuple_table[i]) << std::endl;
+    } 
+    std::cout << "_____________________"<<std::endl;
+
+}
+Table PreProcessor::parseDirectiveEQU(void)
+{
+    Table equs;
+    std::tuple<std::string,std::string> current_tuple;
+    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
+    {
+        if(std::get<1>(this->file_being_processed[i]).size()>=3 && std::get<1>(this->file_being_processed[i])[2] == "EQU")
+        {
+            current_tuple = make_tuple(std::get<1>(this->file_being_processed[i])[0],std::get<1>(this->file_being_processed[i])[3]);
+            equs.push_back(current_tuple);
+            this->file_being_processed.erase(this->file_being_processed.begin()+i);
+            i--;
+        }
+    }
+    return equs; 
+}
+
+std::string PreProcessor::findInTable(Table tbl, std::string id)
+{
+    for(size_t i = 0; i != tbl.size() ; i++)
+    {
+        if(std::get<0>(tbl[i]) == id)
+        {
+            return std::get<1>(tbl[i]);
+        } 
+    }
+    return "NULL";
+}
+
+void PreProcessor::processEQUs(void)
+{
+    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
+    {
+        for(size_t j = 2; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
+        {
+            auto aux = findInTable(this->table_EQU,std::get<1>(this->file_being_processed[i])[j]);
+            if(aux != "NULL")
+            {
+                std::get<1>(this->file_being_processed[i])[j] = aux;
+            }
+        }   
+    }
 }
 
 void PreProcessor::preProcess(void)
 {
-    tuple_list file = removeEmptySpacesAndLines(); 
-    printTupleListFile(file);
+    this->file_being_processed = removeEmptySpacesAndLines(); 
+    printTupleListFile();
+    this->table_EQU = parseDirectiveEQU();
+    printTupleTable(this->table_EQU);
+    printTupleListFile();
+    std::cout << findInTable(this->table_EQU, "ASDASD")<<std::endl;
+    processEQUs();
+    printTupleListFile();
 }

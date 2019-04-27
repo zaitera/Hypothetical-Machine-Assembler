@@ -15,7 +15,10 @@
     This data type helps representing our relevant informations of the source code (words and characters) in the vector of strings
     And also the number of the respective line in the source code as a uint16_t
 */
-typedef std::vector< std::tuple<uint16_t, std::vector< std::string> > > tuple_list;
+typedef std::vector< std::tuple<uint16_t, std::vector< std::string> > > TupleList;
+
+
+typedef std::vector< std::tuple<std::string, std::string> > Table;
 
 //!  PreProcessor Class. 
 /*!
@@ -28,7 +31,14 @@ private:
     /*! points to the file that contains the source code to be processed. */
     std::fstream* source_code_file;
     
+    //! Private atribute,
+    /*!the file being processed in our representation.*/
+    TupleList file_being_processed;
     
+    //! Private atribute,
+    /*!Table of equivalences in the source code, labels and values.*/
+    Table table_EQU;
+
     //! Private method , receives a pointer to a file.
     /*!
         This method is used to print any file on the console, given its pointer as a parameter
@@ -61,15 +71,21 @@ private:
     /*!
         This method eliminates all extra spaces and white line from the source code 
         and identifies the special characters, split the words between them.
-        This method return a tuple_list, our optimized way of representing the source code .
+        This method return a TupleList, our optimized way of representing the source code .
     */
-    tuple_list removeEmptySpacesAndLines(void);
+    TupleList removeEmptySpacesAndLines(void);
 
-    //! Private method, receives tuple_list (the processed file)
+    //! Private method, receives TupleList (the file being processed)
     /*!
-        This method is used to print the processed file to the console screen, helps for debugging
+        This method is used to print the file being processed to the console screen, helps for debugging
     */
-    void printTupleListFile(tuple_list);
+    void printTupleListFile(void);
+
+    void printTupleTable(Table);
+    Table parseDirectiveEQU(void);
+    std::string findInTable(Table, std::string);
+    void processEQUs(void);
+
 public:
     //! Class constructor, receives a pointer to the source file.
     /*!
