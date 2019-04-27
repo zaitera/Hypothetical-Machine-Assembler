@@ -51,9 +51,17 @@ std::vector<std::string> PreProcessor::splitString(std::string word)
     for (uint16_t i = 1; i < splitting_indexes.size(); i++)
     {
         auto aux = word.substr(last_index,splitting_indexes[i]-last_index);
-        splitted_words.push_back(aux);
-        splitted_words.push_back(std::string(1,word[splitting_indexes[i]]));
-        last_index = i;
+        //adding the word with no special characters
+        if(!(aux.empty()))
+        {
+            splitted_words.push_back(aux);
+        }
+        ///adding the special character found IF NOT EMPTY
+        if(!(std::string(1,word[splitting_indexes[i]]).empty()))
+        {
+            splitted_words.push_back(std::string(1,word[splitting_indexes[i]]));
+        }
+        last_index = splitting_indexes[i]+1;
     }
     //this condition treats the cases where a word starts with a special character, pushes the rest of the string as a word to the splitted words
     if((splitting_indexes.back()) != (word.length()-1) && splitting_indexes.size() > 1)
@@ -84,7 +92,10 @@ tuple_list  PreProcessor::removeEmptySpacesAndLines(void)
         {
             std::transform(word.begin(), word.end(),word.begin(), ::toupper);
             auto aux = splitString(word);
-            sentence.insert(sentence.end(),aux.begin(),aux.end());
+            if(!(text_line.empty()))
+            {
+                sentence.insert(sentence.end(),aux.begin(),aux.end());
+            }
         }
         if(!(text_line.empty()))
         {
@@ -110,5 +121,6 @@ void PreProcessor::printTupleListFile(tuple_list tuple_file)
 
 void PreProcessor::preProcess(void)
 {
-    printTupleListFile(removeEmptySpacesAndLines());
+    tuple_list file = removeEmptySpacesAndLines(); 
+    printTupleListFile(file);
 }

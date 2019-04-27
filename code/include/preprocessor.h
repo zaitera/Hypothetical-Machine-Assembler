@@ -64,6 +64,11 @@ private:
         This method return a tuple_list, our optimized way of representing the source code .
     */
     tuple_list removeEmptySpacesAndLines(void);
+
+    //! Private method, receives tuple_list (the processed file)
+    /*!
+        This method is used to print the processed file to the console screen, helps for debugging
+    */
     void printTupleListFile(tuple_list);
 public:
     //! Class constructor, receives a pointer to the source file.
