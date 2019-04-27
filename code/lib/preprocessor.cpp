@@ -138,6 +138,10 @@ Table PreProcessor::parseDirectiveEQU(void)
         if(std::get<1>(this->file_being_processed[i]).size()>=3 && std::get<1>(this->file_being_processed[i])[2] == "EQU")
         {
             current_tuple = make_tuple(std::get<1>(this->file_being_processed[i])[0],std::get<1>(this->file_being_processed[i])[3]);
+            if (std::get<1>(this->file_being_processed[i])[3] != "1" && std::get<1>(this->file_being_processed[i])[3] != "0")
+            {
+                std::cout<<"Warning: EQU of line : "<<std::get<0>(this->file_being_processed[i]) + 1<<" in original source code, is not 0 neither 1."<<std::endl;
+            }
             equs.push_back(current_tuple);
             this->file_being_processed.erase(this->file_being_processed.begin()+i);
             i--;
@@ -162,7 +166,7 @@ void PreProcessor::processEQUs(void)
 {
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
-        for(size_t j = 2; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
+        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
         {
             auto aux = findInTable(this->table_EQU,std::get<1>(this->file_being_processed[i])[j]);
             if(aux != "NULL")
@@ -173,14 +177,39 @@ void PreProcessor::processEQUs(void)
     }
 }
 
+void PreProcessor::processIFs(void)
+{
+    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
+    {
+        if(std::get<1>(this->file_being_processed[i])[0] == "IF")
+        {
+            if(std::get<1>(this->file_being_processed[i])[1] == "1")
+            {
+                this->file_being_processed.erase(this->file_being_processed.begin()+i);
+                i--;
+            } else if (std::get<1>(this->file_being_processed[i])[1] == "0")
+            {
+                this->file_being_processed.erase(this->file_being_processed.begin()+i);
+                i--;
+                this->file_being_processed.erase(this->file_being_processed.begin()+i+1);
+                i--;
+            }else
+            {
+                std::cout<<"Error: IF of line : "<<std::get<0>(this->file_being_processed[i]) + 1<<" in original source code, condition is not 0 neither 1."<<std::endl;
+                std::cout << std::get<1>(this->file_being_processed[i])[1] << std::endl;
+            }
+        }
+    }
+}
+
 void PreProcessor::preProcess(void)
 {
     this->file_being_processed = removeEmptySpacesAndLines(); 
     printTupleListFile();
     this->table_EQU = parseDirectiveEQU();
-    printTupleTable(this->table_EQU);
-    printTupleListFile();
-    std::cout << findInTable(this->table_EQU, "ASDASD")<<std::endl;
+    //printTupleTable(this->table_EQU);
     processEQUs();
+    //printTupleListFile();
+    processIFs();
     printTupleListFile();
 }

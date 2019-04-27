@@ -85,6 +85,7 @@ private:
     Table parseDirectiveEQU(void);
     std::string findInTable(Table, std::string);
     void processEQUs(void);
+    void processIFs(void);
 
 public:
     //! Class constructor, receives a pointer to the source file.
