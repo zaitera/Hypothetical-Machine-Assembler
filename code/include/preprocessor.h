@@ -8,17 +8,28 @@
 #include <iomanip>
 #include <algorithm>
 #include <bits/stdc++.h> 
-#define SPECIAL_CHARACTERS ',',':','&',';'
+#define SPECIAL_CHARACTERS ',',':',';'
+
+#define MIN_MACRO 3
+#define MAXIMUM_AMOUNT_OF_MACRO_ARGUMENTS 3
+#define MAX_NUMBER_COMMAS 2
+#define MAX_MACRO (MIN_MACRO + MAXIMUM_AMOUNT_OF_MACRO_ARGUMENTS + MAX_NUMBER_COMMAS)
+#define MACRO_HAS_PARAMETERS(a) (a>MIN_MACRO)
+#define THERE_ARE_MORE_COMMAS(n_tokens) ((n_tokens - MIN_MACRO)%2 == 0)
+
+#define ELEMENT_FBP(i, j) std::get<i>(this->file_being_processed[j])
+
 
 //! Data type, made of a tuple <int, and a vector of strings>
 /*!
     This data type helps representing our relevant informations of the source code (words and characters) in the vector of strings
     And also the number of the respective line in the source code as a uint16_t
 */
-typedef std::vector< std::tuple<uint16_t, std::vector< std::string> > > TupleList;
+typedef std::vector< std::tuple<uint16_t, std::vector< std::string>> > TupleList;
 
 
 typedef std::vector< std::tuple<std::string, std::string> > Table;
+typedef std::vector< std::tuple<std::string, uint8_t, uint8_t> > MacroNameTable;
 
 //!  PreProcessor Class. 
 /*!
@@ -39,6 +50,8 @@ private:
     /*!Table of equivalences in the source code, labels and values.*/
     Table table_EQU;
 
+    MacroNameTable mnt;
+    TupleList mdt;
     //! Private method , receives a pointer to a file.
     /*!
         This method is used to print any file on the console, given its pointer as a parameter
@@ -80,14 +93,19 @@ private:
         This method is used to print the file being processed to the console screen, helps for debugging
     */
     void printTupleListFile(void);
-
+    void printMDT(void);
+    void printMNT(void);
     void printTupleTable(Table);
     void removeComments(void);
-    
+    bool insertInMacroNameTable(size_t i, size_t position_macro);
+    void insertInMacroDefinitionTable(size_t pos, std::vector<std::string>);
+    bool swapLinesMacro(size_t line, size_t position_macro);
+
     Table parseDirectiveEQU(void);
     std::string findInTable(Table, std::string);
     void processEQUs(void);
     void processIFs(void);
+    void processMacros(void);
 
 public:
     //! Class constructor, receives a pointer to the source file.
