@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <bits/stdc++.h> 
-#define SPECIAL_CHARACTERS ',',':',';'
+#define SPECIAL_CHARACTERS ',',':','+',';'
 
 #define MIN_MACRO 3
 #define MAXIMUM_AMOUNT_OF_MACRO_ARGUMENTS 3
@@ -113,12 +113,17 @@ public:
         constructs the object and indicates the file to be processed.
     */
     PreProcessor(std::fstream *);
-    PreProcessor::~PreProcessor();
+    
+    //! Class destructor,
+    /*!
+        destructs the object guarantees a clean exit for the program.
+    */
+    ~PreProcessor();
     //! Public method
     /*!
         This method does the preprocessing action from a to z for the defined source code.
     */
-    void preProcess(void);
+    TupleList preProcess(void);
 };
 
 #endif /* PREPROCESSOR_H */

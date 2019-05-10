@@ -375,7 +375,7 @@ void PreProcessor::processMacros(void)
     } 
 }
 
-void PreProcessor::preProcess(void)
+TupleList PreProcessor::preProcess(void)
 {
     this->file_being_processed = removeUselessInfos(); 
     //printTupleListFile();
@@ -390,5 +390,5 @@ void PreProcessor::preProcess(void)
     printMNT();
     printMDT();
     printTupleListFile();
-    
+    return  this->file_being_processed;
 }
