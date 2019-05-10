@@ -6,6 +6,8 @@ PreProcessor::PreProcessor(std::fstream *source)
     this->source_code_file = source;
 }
 
+PreProcessor::~PreProcessor(){}
+
 void PreProcessor::printSourceFile(void)
 {
     PreProcessor::printFile(this->source_code_file);

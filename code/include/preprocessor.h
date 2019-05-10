@@ -113,6 +113,7 @@ public:
         constructs the object and indicates the file to be processed.
     */
     PreProcessor(std::fstream *);
+    PreProcessor::~PreProcessor();
     //! Public method
     /*!
         This method does the preprocessing action from a to z for the defined source code.
