@@ -170,9 +170,9 @@ void Assembler::sintaticAnalyzer(void)
 {
     for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
     {
-        auto aux = std::get<1>(this->file_being_assembled[i])[j];
+        auto aux = std::get<1>(this->file_being_assembled[i]);
         
-        if (aux[2] == ":")
+        if (aux[1] == ":")
         {
             try
             {
@@ -216,5 +216,5 @@ void Assembler::assemble(void)
 {
     PreProcessor pre_processor(this->source_code_file);
     this->file_being_assembled = pre_processor.preProcess();
-    testLexicalAnalyzer();
+    sintaticAnalyzer();
 }
