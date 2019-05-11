@@ -2,6 +2,14 @@
 #define ASSEMBLER_H
 #include <preprocessor.h>
 
+enum TokenType{
+    spchar = 0,
+    inst = 1,
+    label = 2,
+    memparameter = 3,
+    constval = 4
+};
+
 class Assembler
 {
 private:
@@ -12,9 +20,14 @@ private:
     //! Private atribute,
     /*!the file being assembled in our representation.*/
     TupleList file_being_assembled;
+    void spcharLexicalAnalysis(std::string special_char);
+    void memoryParamLexicalAnalysis(std::string memparam);
+    void constValLexicalAnalysis(std::string instruction);
+    void instLexicalAnalysis(std::string instruction);
+    void labelLexicalAnalysis(std::string label);
 
-    void lexicalAnalyzer(std::string);
-    void testLexicalAnalyzer(void);   
+    void lexicalAnalyzer(std::string, TokenType);
+    void sintaticAnalyzer(void);   
 public:
     //! Class constructor, receives a pointer to the source file.
     /*!

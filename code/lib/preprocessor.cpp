@@ -219,7 +219,7 @@ void PreProcessor::processIFs(void)
                 this->file_being_processed.erase(this->file_being_processed.begin()+(i--)+1);
             }else
             {
-                std::cout<<"Error: IF of line : "<<std::get<0>(this->file_being_processed[i]) + 1<<" in original source code, condition is not 0 nor 1."<<std::endl;
+                std::cout<<"Error: IF of line : "<<std::get<0>(this->file_being_processed[i]) + 1<<" in original source code, condition is not 0 nor 1 : ";
                 std::cout << std::get<1>(this->file_being_processed[i])[1] << std::endl;
             }
         }
