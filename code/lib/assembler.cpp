@@ -7,29 +7,28 @@ Assembler::Assembler(std::fstream *source)
 
 Assembler::~Assembler(){}
 
-void Assembler::lexicalAnalyzer(std::string word)
+void Assembler::lexicalAnalyzer(std::string token)
 {
-    if(!isalpha(word[0]) && (word.size() > 1))
+    if(!isalpha(token[0]) && (token.size() > 1))
     {
-        throw "Word starts with non-alphabetic character";
-    }else
+        std::string msg("Lexical error: '");
+        msg.insert(16,token); 
+        msg.insert(16+token.size(),"' starts with non-alphabetic character '");
+        msg.insert(msg.end(),1,token[0]); 
+        msg.insert(msg.end(),1,'\''); 
+        throw msg;
+    }else if(token.size() > 1)
     {
-        bool found = false; 
-        std::vector<char> special_characters{SPECIAL_CHARACTERS,'_'};
-        for(char& c : word) 
+        for(char& c : token) 
         {
-            for(char& s : special_characters) 
+            if(!isalnum(c) && c != '_' )
             {
-                if (c==s)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if(!isalnum(c) && !found)
-            {
-                
-                throw "Word contains illegal character, not an alphanumeric character";
+                std::string msg("Lexical error: '");                
+                msg.insert(16,token); 
+                msg.insert(16+token.size(),"' contains a non-alphanumeric character '");
+                msg.insert(msg.end(),1,c); 
+                msg.insert(msg.end(),1,'\''); 
+                throw msg;
                 break;
             }
         }
@@ -45,8 +44,8 @@ void Assembler::testLexicalAnalyzer(void)
             try
             {
                 lexicalAnalyzer(std::get<1>(this->file_being_assembled[i])[j]);
-            } catch (const char* msg) {
-                std::cerr << msg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
+            } catch (std::string errmsg) {
+                std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
             }
         }
     }

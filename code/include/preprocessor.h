@@ -8,7 +8,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <bits/stdc++.h> 
-#define SPECIAL_CHARACTERS ',',':','+',';'
+#define SPECIAL_CHARACTERS ',',':',';'
 
 #define MIN_MACRO 3
 #define MAXIMUM_AMOUNT_OF_MACRO_ARGUMENTS 3
