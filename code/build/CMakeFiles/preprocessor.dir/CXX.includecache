@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/preprocessor.h
+iostream
+-
+fstream
+-
+sstream
+-
+tuple
+-
+iomanip
+-
+algorithm
+-
+bits/stdc++.h
+-
+
+/home/abdullah/SB/Hypothetical-Machine-Assembler/code/lib/preprocessor.cpp
+preprocessor.h
+-
+

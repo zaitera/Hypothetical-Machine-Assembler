@@ -1,0 +1,2 @@
+/usr/bin/ar qc libbin/libassembler.a  CMakeFiles/assembler.dir/lib/assembler.cpp.o
+/usr/bin/ranlib libbin/libassembler.a

@@ -262,6 +262,11 @@ void Assembler::firstPass(void)
         {
             throw errmsg;
         }
+        if (current_token == line.size())
+        {
+            continue;
+        }
+        
         switch (section)
         {
             case TEXT:
