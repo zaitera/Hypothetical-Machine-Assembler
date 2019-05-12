@@ -166,6 +166,56 @@ void Assembler::lexicalAnalyzer(std::string token, TokenType type)
     }
 }
 
+void Assembler::instructionSintax(std::vector<std::string> sentence)
+{
+    try
+    {
+        lexicalAnalyzer(sentence[0],inst);
+    }catch (std::string errmsg) {
+        std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
+    }
+    for (size_t i = 1; i < sentence.size() ; i+=2)
+    {
+        try
+        {
+            lexicalAnalyzer(sentence[i],memparameter);
+        }catch (std::string errmsg) {
+            std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
+        }
+    }
+}
+
+uint8_t Assembler::countWords(std::vector<std::string> sentence)
+{
+    uint8_t cont;
+    std::vector<char> special_characters{SPECIAL_CHARACTERS, '-','+'};
+    bool found = false;
+    for (size_t i = 0,cont = 0; i < sentence.size(); i++)
+    {
+        if(sentence[i].size()>1)
+        {
+            cont++;
+        }else
+        {
+            for (size_t i = 0; i < special_characters.size(); i++)
+            {
+                std::string as_str(1, special_characters[i]);
+                if (as_str == sentence[i])
+                {
+                    found = true;
+                    break;
+                }
+                
+            }
+            if (!found)
+            {
+                cont++;
+            }  
+        }
+    }
+    
+}
+
 void Assembler::sintaticAnalyzer(void)
 {
     for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
@@ -176,39 +226,12 @@ void Assembler::sintaticAnalyzer(void)
         {
             try
             {
-                lexicalAnalyzer(aux[1],label);
+                lexicalAnalyzer(aux[0],label);
             }catch (std::string errmsg) {
                 std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
             }
-        }else
-        {
-            try
-            {
-                lexicalAnalyzer(aux[0],inst);
-            }catch (std::string errmsg) {
-                std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
-            }
-            for (size_t i = 1; i < aux.size() ; i+=2)
-            {
-                try
-                {
-                    lexicalAnalyzer(aux[i],memparameter);
-                }catch (std::string errmsg) {
-                    std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
-                }
-            }
-            
         }
-        // for(size_t j = 0; j != std::get<1>(this->file_being_assembled[i]).size(); j++ )
-        // {
-        //     try
-        //     {
-        //         auto aux = std::get<1>(this->file_being_assembled[i])[j];
-        //         lexicalAnalyzer(aux, aux.size()>1? label : spchar);
-        //     } catch (std::string errmsg) {
-        //         std::cout <<errmsg << " -> in line " << i+1 <<" of preprocessed AND line "<<std::get<0>(this->file_being_assembled[i])+1 <<" of original source code."<<std::endl;
-        //     }
-        // }
+
     }
 }
 

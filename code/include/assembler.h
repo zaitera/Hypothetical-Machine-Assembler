@@ -10,6 +10,11 @@ enum TokenType{
     constval = 4
 };
 
+enum Section
+{
+    TEXT,
+    DATA
+};
 class Assembler
 {
 private:
@@ -25,9 +30,43 @@ private:
     void constValLexicalAnalysis(std::string instruction);
     void instLexicalAnalysis(std::string instruction);
     void labelLexicalAnalysis(std::string label);
-
+    void instructionSintax(std::vector<std::string> aux);
     void lexicalAnalyzer(std::string, TokenType);
-    void sintaticAnalyzer(void);   
+    uint8_t countWords(std::vector<std::string> sentence);
+    void sintaticAnalyzer(void);
+    const std::map<std::string, short> instOpcodes = {
+        {"ADD", 1},
+        {"SUB", 2},
+        {"MULT", 3},
+        {"DIV", 4},
+        {"JMP", 5},
+        {"JMPN", 6},
+        {"JMPP", 7},
+        {"JMPZ", 8},
+        {"COPY", 9},
+        {"LOAD", 10},
+        {"STORE", 11},
+        {"INPUT", 12},
+        {"OUTPUT", 13},
+        {"STOP", 14}
+    };
+    const std::map<std::string, int> memSpaces = {
+        {"ADD", 2},
+        {"SUB", 2},
+        {"MULT", 2},
+        {"DIV", 2},
+        {"JMP", 2},
+        {"JMPN", 2},
+        {"JMPP", 2},
+        {"JMPZ", 2},
+        {"COPY", 3},
+        {"LOAD", 2},
+        {"STORE", 2},
+        {"INPUT", 2},
+        {"OUTPUT", 2},
+        {"STOP", 1},
+        {"PUBLIC", 0}
+    };   
 public:
     //! Class constructor, receives a pointer to the source file.
     /*!
