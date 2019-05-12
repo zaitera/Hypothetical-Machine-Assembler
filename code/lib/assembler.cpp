@@ -11,9 +11,8 @@ void Assembler::labelLexicalAnalysis(std::string label)
 {
     if(!isalpha(label[0]))
     {
-        std::string msg("Lexical error: '");
-        msg.insert(16,label); 
-        msg.insert(16+label.size(),"' label starts with non-alphabetic character '");
+        std::string msg("Lexical error: »'");
+        msg = msg + label + "' label starts with non-alphabetic character '";
         msg.insert(msg.end(),1,label[0]); 
         msg.insert(msg.end(),1,'\''); 
         throw msg;
@@ -23,9 +22,8 @@ void Assembler::labelLexicalAnalysis(std::string label)
         {
             if(!isalnum(c) && c != '_' )
             {
-                std::string msg("Lexical error: '");                
-                msg.insert(16,label); 
-                msg.insert(16+label.size(),"' label contains a non-alphanumeric character '");
+                std::string msg("Lexical error: »'");                
+                msg = msg + label + "' label contains a non-alphanumeric character '";
                 msg.insert(msg.end(),1,c); 
                 msg.insert(msg.end(),1,'\''); 
                 throw msg;
@@ -37,24 +35,10 @@ void Assembler::labelLexicalAnalysis(std::string label)
 
 void Assembler::instLexicalAnalysis(std::string instruction)
 {
-    // for(char& c : instruction) 
-    // {
-    //     if(!isalpha(c))
-    //     {
-    //         std::string msg("Lexical error: '");                
-    //         msg.insert(16,instruction); 
-    //         msg.insert(16+instruction.size(),"' instruction contains a non-alphanumeric character '");
-    //         msg.insert(msg.end(),1,c); 
-    //         msg.insert(msg.end(),1,'\''); 
-    //         throw msg;
-    //         break;
-    //     }
-    // }
     if(instOpcodesMP.count(instruction)==0)
     {
-        std::string msg("Lexical error: '");                
-        msg.insert(16,instruction); 
-        msg.insert(16+instruction.size(),"' instruction was not recognized.");
+        std::string msg("Lexical error: »'");                
+        msg = msg + instruction + "' instruction was not recognized.";
         throw msg;
     }
 }
@@ -63,9 +47,8 @@ void Assembler::memoryParamLexicalAnalysis(std::string memparam)
 {
     if(!isalpha(memparam[0]))
     {
-        std::string msg("Lexical error: '");
-        msg.insert(16,memparam); 
-        msg.insert(16+memparam.size(),"' memory address parameter starts with non-alphabetic character '");
+        std::string msg("Lexical error: »'");
+        msg = msg + memparam + "' memory address parameter starts with non-alphabetic character '";
         msg.insert(msg.end(),1,memparam[0]); 
         msg.insert(msg.end(),1,'\''); 
         throw msg;
@@ -75,9 +58,8 @@ void Assembler::memoryParamLexicalAnalysis(std::string memparam)
         {
             if(!isalnum(c) && c!= '+')
             {
-                std::string msg("Lexical error: '");                
-                msg.insert(16,memparam); 
-                msg.insert(16+memparam.size(),"' memory address parameter contains a non-alphanumeric character '");
+                std::string msg("Lexical error: »'");                
+                msg = msg + memparam + "' memory address parameter contains a non-alphanumeric character '";
                 msg.insert(msg.end(),1,c); 
                 msg.insert(msg.end(),1,'\''); 
                 throw msg;
@@ -93,9 +75,8 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
     {
         if(!isdigit(c) && c != '+' && c != '-'&& c != 'x')
         {
-            std::string msg("Lexical error: '");                
-            msg.insert(16,instruction); 
-            msg.insert(16+instruction.size(),"' constant value contains a non-numeric related character '");
+            std::string msg("Lexical error: »'");                
+            msg = msg + instruction + "' constant value contains a non-numeric related character '";
             msg.insert(msg.end(),1,c); 
             msg.insert(msg.end(),1,'\''); 
             throw msg;
@@ -117,7 +98,7 @@ void Assembler::spcharLexicalAnalysis(std::string special_char)
     }
     if (!found)
     {
-        std::string msg("Lexical error: '");                
+        std::string msg("Lexical error: »'");                
         msg.insert(16,special_char); 
         msg.insert(17,"' is illegal character for this context.");
         throw msg;
