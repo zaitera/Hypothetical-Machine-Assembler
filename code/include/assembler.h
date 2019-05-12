@@ -70,7 +70,7 @@ private:
     void lexicalAnalyzer(std::string, TokenType);
     uint8_t countWords(std::vector<std::string> sentence);
     void firstPass(void);
-    void labelAnalysis(std::vector<std::string> line, uint16_t line_num_pre, uint16_t line_num_orig, uint16_t mem_pos );
+    uint16_t labelAnalysis(std::vector<std::string> line, uint16_t line_num_pre, uint16_t line_num_orig, uint16_t mem_pos );
     Section sectionAnalysis(std::string str,uint16_t line_num_pre, uint16_t line_num_orig);
 
 public:

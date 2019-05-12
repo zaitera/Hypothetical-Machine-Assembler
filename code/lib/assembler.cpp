@@ -50,7 +50,7 @@ void Assembler::instLexicalAnalysis(std::string instruction)
     //         break;
     //     }
     // }
-    if(instOpcodesMP.find(instruction)==instOpcodesMP.end())
+    if(instOpcodesMP.count(instruction)==0)
     {
         std::string msg("Lexical error: '");                
         msg.insert(16,instruction); 
@@ -173,37 +173,6 @@ void Assembler::lexicalAnalyzer(std::string token, TokenType type)
     }
 }
 
-uint8_t Assembler::countWords(std::vector<std::string> sentence)
-{
-    uint8_t cont = 0;
-    std::vector<char> special_characters{SPECIAL_CHARACTERS, '-','+'};
-    bool found;
-    for (size_t i = 0; i < sentence.size(); i++)
-    {
-        found = false;
-        if(sentence[i].size()>1)
-        {
-            cont++;
-        }else
-        {
-            for (size_t j = 0; j < special_characters.size(); j++)
-            {
-                if (special_characters[j] == sentence[i][0])
-                {
-                    found = true;
-                    break;
-                }       
-            }
-            if (!found)
-            {
-                cont++;
-            }  
-        }
-    }
-    return cont;
-}
-
-
 struct size_less
 {
     template<class T> bool operator()(T const &a, T const &b) const
@@ -225,7 +194,7 @@ void printMAP(std::map<std::string, uint16_t> myMap)
 
 }
 
-void Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_num_pre, uint16_t line_num_orig, uint16_t mem_pos )
+uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_num_pre, uint16_t line_num_orig, uint16_t mem_pos )
 {
     std::string errmsg;
     auto symbol_count = count(line.begin(), line.end(), ":");
@@ -247,6 +216,7 @@ void Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_num_p
                     throw errmsg;
                 }
                 this->symbolsTableMP.insert( std::pair<std::string,uint16_t>(line[0],mem_pos) );
+                return 2;
                 printMAP(symbolsTableMP);
             }else
             {
@@ -264,6 +234,7 @@ void Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_num_p
         errmsg = "Syntactic error: »'"+line[0]+"' has more than one label declaration symbol ':' -> in line "+ std::to_string(line_num_pre) +" of preprocessed AND line "+std::to_string(line_num_orig)+" of original source code.";
         throw errmsg;
     }
+    return 0;
 }
 
 Section Assembler::sectionAnalysis(std::string str,uint16_t line_num_pre, uint16_t line_num_orig)
@@ -283,26 +254,21 @@ void Assembler::firstPass(void)
     Section section = UNDEFINED;
     std::string errmsg;
     uint16_t mem_pos = 0;
+    uint16_t current_token = 0;
     for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
-        //treating cases wheres theres less than two valid tokens in the line
-        if (countWords(line)<2)
-        {
-            errmsg = "Syntactic error: »'"+maxWord(line)+"' line contains less than two words -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
-            throw errmsg;
-        }
-        //checking 
         if (line[0] == "SECTION")
         {
             try
             {
-                section = sectionAnalysis(line[1],i+1, std::get<0>(this->file_being_assembled[i])+1);
+                section = sectionAnalysis(line[1], i+1, std::get<0>(this->file_being_assembled[i])+1);
             }
             catch(std::string errmsg)
             {
                 throw errmsg;
             }
+            continue;
         }
         if (section == UNDEFINED)
         {
@@ -311,13 +277,32 @@ void Assembler::firstPass(void)
         }        
         try
         {
-            labelAnalysis(line,i+1, std::get<0>(this->file_being_assembled[i])+1, mem_pos);
+            current_token = labelAnalysis(line, i+1, std::get<0>(this->file_being_assembled[i])+1, mem_pos);
         }
         catch(std::string errmsg)
         {
             throw errmsg;
         }
-        
+        switch (section)
+        {
+            case TEXT:
+                try
+                {
+                    lexicalAnalyzer(line[current_token],inst);
+                }
+                catch(std::string errmsg)
+                {
+                    errmsg = errmsg + "-> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                    throw errmsg;
+                }
+                
+                break;
+            case DATA:
+                
+                break;
+            default:
+                break;
+        }
        
     }
 }

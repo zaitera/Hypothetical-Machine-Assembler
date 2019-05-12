@@ -236,6 +236,11 @@ void PreProcessor::removeComments(void)
         {          
             if(std::get<1>(this->file_being_processed[i])[j] == ";")
             {
+                if (j == 0)
+                {
+                    this->file_being_processed.erase(this->file_being_processed.begin()+(i--));
+                    continue;
+                }
                 std::get<1>(this->file_being_processed[i]).erase(std::get<1>(this->file_being_processed[i]).begin()+j, std::get<1>(this->file_being_processed[i]).end()-1);
                 std::get<1>(this->file_being_processed[i]).pop_back();
                 found = true;
