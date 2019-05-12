@@ -198,12 +198,10 @@ uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_n
 {
     std::string errmsg;
     auto symbol_count = count(line.begin(), line.end(), ":");
-
     if ( symbol_count == 1 )
     {
         if (line[1] == ":")
         {
-            
             if ( this->symbolsTableMP.count(line[0]) ==  0 )
             {
                 try
@@ -216,8 +214,8 @@ uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t line_n
                     throw errmsg;
                 }
                 this->symbolsTableMP.insert( std::pair<std::string,uint16_t>(line[0],mem_pos) );
-                return 2;
                 printMAP(symbolsTableMP);
+                return 2;
             }else
             {
                 errmsg = "Syntactic error: »'"+line[0]+"' has been defined befores -> in line "+ std::to_string(line_num_pre) +" of preprocessed AND line "+std::to_string(line_num_orig)+" of original source code.";

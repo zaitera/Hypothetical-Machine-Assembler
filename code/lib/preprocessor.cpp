@@ -390,10 +390,10 @@ TupleList PreProcessor::preProcess(void)
     processEQUs();
     //printTupleListFile();
     processIFs();
-    printTupleListFile();
+    //printTupleListFile();
     processMacros();
-    printMNT();
-    printMDT();
+    //printMNT();
+    //printMDT();
     printTupleListFile();
     return  this->file_being_processed;
 }
