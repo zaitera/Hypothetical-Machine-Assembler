@@ -331,7 +331,9 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
 bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
 {
     auto n_arguments = std::get<1>(this->mnt[position_macro]);
-    auto n_commas = n_arguments - 1;
+    auto n_commas = 0;
+    if (n_arguments > 0)
+        n_commas = n_arguments - 1;
     if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas) != (n_arguments)  )
     {
         std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, line)+1 << ": Error: Number of arguments invalid" << std::endl;
