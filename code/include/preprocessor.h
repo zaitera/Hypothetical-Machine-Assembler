@@ -15,7 +15,7 @@
 #define MAX_NUMBER_COMMAS 2
 #define MAX_MACRO (MIN_MACRO + MAXIMUM_AMOUNT_OF_MACRO_ARGUMENTS + MAX_NUMBER_COMMAS)
 #define MACRO_HAS_PARAMETERS(a) (a>MIN_MACRO)
-#define THERE_ARE_MORE_COMMAS(n_tokens) ((n_tokens - MIN_MACRO)%2 == 0)
+#define THERE_ARE_MORE_COMMAS(n_tokens) ( ((n_tokens - MIN_MACRO)%2 == 0) && (n_tokens != MIN_MACRO) )
 
 #define ELEMENT_FBP(i, j) std::get<i>(this->file_being_processed[j])
 
