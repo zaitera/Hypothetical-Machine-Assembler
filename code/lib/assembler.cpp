@@ -302,9 +302,9 @@ void Assembler::firstPass(void)
                 }
                 auto mem_spaces =  this->memSpacesMP.at(line[current_token]);
                 auto aux = (line[current_token] == "COPY")? mem_spaces+1:mem_spaces;
-                if (line.size()-current_token < aux)
+                if (line.size()-current_token < aux || line.size()-current_token >aux )
                 {                
-                    errmsg = "Syntactic error: »'"+line[current_token]+"' instruction doesn't have the right amount of parameter (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                    errmsg = "Syntactic error: »'"+line[current_token]+"' instruction format or amount of parameter is invalid (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
                 try
@@ -351,7 +351,23 @@ void Assembler::firstPass(void)
                     }
                     mem_pos += 1;
                 }
-                
+                if (line[current_token] == "SPACE")
+                {
+                    auto aux = line.size()-current_token;
+                    if ( aux >= 2 )
+                    {
+                        if ((line[current_token+1].find_first_not_of( "0123456789" ) != std::string::npos) || aux > 2)
+                        {
+                            errmsg = "Lexical error: »'SPACE' directive is followed by invalid token (not an integer number or valid line) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                            throw errmsg;
+                        }
+                        std::stringstream str(line[current_token+1]);
+                        uint16_t aux;
+                        str >> aux;
+                        mem_pos += (aux-1);
+                    }
+                    mem_pos += 1;
+                }
                 break;
             default:
                 break;
