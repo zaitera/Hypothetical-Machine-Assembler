@@ -239,7 +239,7 @@ Section Assembler::sectionAnalysis(std::string str)
     else if(str == "DATA")
         return DATA;
     else{
-        errmsg = "Lexical error: »'"+str+"' is invalid section name ";
+        errmsg = "Syntatic error: »'"+str+"' is invalid section name ";
         throw errmsg;
     }
 }
@@ -311,7 +311,7 @@ void Assembler::firstPass(void)
                 {
                     for (size_t i = 1; i < mem_spaces; i++)
                     {
-                        lexicalAnalyzer(line[current_token+(i*2-1)], label); //i*2 -1 to consider the ',' between parameters
+                        lexicalAnalyzer(line[current_token+(i*2-1)], memparameter); //i*2 -1 to consider the ',' between parameters
                     }                
                 }
                 catch(std::string errmsg)
