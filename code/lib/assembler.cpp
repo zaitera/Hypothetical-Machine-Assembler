@@ -114,7 +114,7 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
 }
 void Assembler::spcharLexicalAnalysis(std::string special_char)
 {
-    std::vector<char> special_characters{SPECIAL_CHARACTERS, '-', '+'};    
+    std::vector<char> special_characters{SPECIAL_CHARACTERS, '+'};    
     bool found = false;
     for(char& c : special_characters) 
     {
@@ -363,6 +363,7 @@ void Assembler::firstPass(void)
                 bool pendent_first = false;
                 bool pendent_last = false;
                 std::vector<std::string> copy_last;
+
                 if (line.end()[-2] == "+")
                 {
                     pendent_last = true;
@@ -400,14 +401,13 @@ void Assembler::firstPass(void)
                 }
                 catch(std::string errmsg)
                 {
-                    errmsg += " as instruction '" +line[current_token]+"' parameter -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                    errmsg += ", as instruction '" +line[current_token]+"' parameter -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
 
                 if (pendent_last)
                 {
                     line.pop_back();
-
                     line.insert(line.end(), copy_last.begin(), copy_last.end());
                 }
 
@@ -415,7 +415,7 @@ void Assembler::firstPass(void)
                 {
                     auto it = line.begin()+current_token+1;
                     line.erase(it);
-                    line.insert(line.begin()+current_token+1, copy_first.begin(), copy_first.end());
+                    line.insert(it, copy_first.begin(), copy_first.end());
                 }
                 
                 mem_pos += mem_spaces;
@@ -433,12 +433,18 @@ void Assembler::firstPass(void)
 
                 if (line[current_token] == "CONST")
                 {
-                    if (line.size()-current_token <= 1)
+                    if ( line.size()>current_token+2 && line[current_token+1] == "+")
+                    {
+                        auto joined_parameter = line[current_token+1] + line[current_token+2];
+                        line[current_token+1] = joined_parameter;
+                        auto it = line.begin()+current_token+2;
+                        line.erase(it);
+                    }
+                    if (line.size()-current_token <= 1 || line.size()-current_token>2 )
                     {
                         errmsg = "Syntactic error: »'CONST' directive is not followed by any value -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                         throw errmsg;
                     }
-                    
                     try
                     {
                         lexicalAnalyzer(line[current_token+1], constval);
