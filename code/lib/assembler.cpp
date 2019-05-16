@@ -251,38 +251,25 @@ bool isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
     switch (inst_size)
     {
         case 4:
-            switch (present_in_line)
+            if (present_in_line == 4 ||present_in_line == 6 || present_in_line == 8 )
             {
-                case 4:
-                    condition = false;
-                    break;
-                case 6:
-                    condition = false;
-                    break;
-                case 8:
-                    condition = false;
-                    break;
-                default:
-                    condition = true;
-                    break;
+                condition = false;
+            }else
+            {
+                condition = true;
             }
+            
             break;
         case 1:
             condition = (present_in_line == inst_size)? false : true;
             break;                
         default:
-            switch (present_in_line)
+            if (present_in_line == 2 || present_in_line == 4)
             {
-                case 2:
-                    condition = false;
-                    break;
-                case 4:
-                    condition = false;
-                    break;
-                
-                default:
-                    condition = true;
-                    break;
+                condition = false;
+            }else
+            {
+                condition = true;
             }
             break;
     }
