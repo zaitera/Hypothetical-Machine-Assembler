@@ -110,14 +110,20 @@ TupleList PreProcessor::removeUselessInfos(void)
 void PreProcessor::printTupleListFile()
 {
     std::cout << "_____________________"<<std::endl;
-    
+    std::fstream output;
+    output.open("test.pre",std::ios::out );
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
         std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
-        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ )
-            std::cout << std::get<1>(this->file_being_processed[i])[j] << " ";
+        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ ){
+            auto aux = std::get<1>(this->file_being_processed[i])[j];
+            std::cout << aux << " ";
+            output << aux<< " ";
+        }
         std::cout << std::endl;
+        output<<std::endl;
     } 
+    output.close();
     std::cout << "_____________________"<<std::endl;
 }
 
