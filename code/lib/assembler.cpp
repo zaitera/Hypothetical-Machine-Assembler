@@ -442,7 +442,7 @@ void Assembler::firstPass(void)
                     }
                     if (line.size()-current_token <= 1 || line.size()-current_token>2 )
                     {
-                        errmsg = "Syntactic error: »'CONST' directive is not followed by any value -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                        errmsg = "Syntactic error: »'CONST' directive is not followed by any value or followed by more than one value -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                         throw errmsg;
                     }
                     try
