@@ -72,7 +72,7 @@ void Assembler::memoryParamLexicalAnalysis(std::string memparam)
             }
             if (!found_plus)
             {
-                if(!isalnum(c))
+                if(!isalnum(c) && c!='_')
                 {
                     std::string msg("Lexical error: »'");                
                     msg = msg + memparam + "' memory address parameter contains a non-alphanumeric character '";
