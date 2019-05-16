@@ -62,16 +62,36 @@ void Assembler::memoryParamLexicalAnalysis(std::string memparam)
         throw msg;
     }else
     {
+        bool found_plus = false;
         for(char& c : memparam) 
         {
-            if(!isalnum(c) && c!= '+')
+            if (c == '+')
             {
-                std::string msg("Lexical error: »'");                
-                msg = msg + memparam + "' memory address parameter contains a non-alphanumeric character '";
-                msg.insert(msg.end(),1,c); 
-                msg.insert(msg.end(),1,'\''); 
-                throw msg;
-                break;
+                found_plus = true;
+                continue;
+            }
+            if (!found_plus)
+            {
+                if(!isalnum(c))
+                {
+                    std::string msg("Lexical error: »'");                
+                    msg = msg + memparam + "' memory address parameter contains a non-alphanumeric character '";
+                    msg.insert(msg.end(),1,c); 
+                    msg.insert(msg.end(),1,'\''); 
+                    throw msg;
+                    break;
+                }
+            }else
+            {
+                if(!isdigit(c))
+                {
+                    std::string msg("Lexical error: »'");                
+                    msg = msg + memparam + "' in this memory address parameter the number summed to label is not valid '";
+                    msg.insert(msg.end(),1,c); 
+                    msg.insert(msg.end(),1,'\''); 
+                    throw msg;
+                    break;
+                }
             }
         }
     }
@@ -245,20 +265,19 @@ Section Assembler::sectionAnalysis(std::string str)
     }
 }
 
-bool isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
+bool Assembler::isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
 {
     bool condition;
     switch (inst_size)
     {
         case 4:
-            if (present_in_line == 4 ||present_in_line == 6 || present_in_line == 8 )
+            if (present_in_line == 4 || present_in_line == 6 || present_in_line == 8 )
             {
                 condition = false;
             }else
             {
                 condition = true;
             }
-            
             break;
         case 1:
             condition = (present_in_line == inst_size)? false : true;
@@ -341,15 +360,42 @@ void Assembler::firstPass(void)
                     errmsg = "Syntactic error: »'"+line[current_token]+"' instruction format or amount of parameter is invalid (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
+                bool pendent_first = false;
+                bool pendent_last = false;
+                std::vector<std::string> copy_last;
+                if (line.end()[-2] == "+")
+                {
+                    pendent_last = true;
+                    auto joined_parameter = line.end()[-3] + line.end()[-2] + line.end()[-1];
+                    copy_last = {line.end()[-3], line.end()[-2], line.end()[-1]};
+                    line.end()[-3] = joined_parameter;
+                    line.pop_back();
+                    line.pop_back();
+                }
+
+                std::vector<std::string> copy_first;
+                if (line[current_token] == "COPY" && line[current_token+2]=="+")
+                {
+                    pendent_first = true;
+                    auto joined_parameter = line[current_token+1] + line[current_token+2] + line[current_token+3];
+                    copy_first = {line[current_token+1], line[current_token+2], line[current_token+3]};
+                    line[current_token+1] = joined_parameter;
+                    auto it = line.begin()+current_token+2;
+                    line.erase(it);
+                    line.erase(it);
+                }
+
                 try
                 {
-                    for (size_t i = 1; i < line.size()-current_token; i++)
+                    for (size_t i = current_token+1; i < line.size(); i++)
                     {
-                        if (line[current_token+i] != ",")
+                        if (i == current_token+2)
                         {
-                            lexicalAnalyzer(line[current_token+i], memparameter); //i*2 -1 to consider the ',' between parameters
+                            lexicalAnalyzer(line[i], spchar); //the ',' between parameters
+                        }else
+                        {
+                            lexicalAnalyzer(line[i], memparameter);
                         }
-                        
                     }                
                 }
                 catch(std::string errmsg)
@@ -357,6 +403,21 @@ void Assembler::firstPass(void)
                     errmsg += " as instruction '" +line[current_token]+"' parameter -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
+
+                if (pendent_last)
+                {
+                    line.pop_back();
+
+                    line.insert(line.end(), copy_last.begin(), copy_last.end());
+                }
+
+                if (pendent_first)
+                {
+                    auto it = line.begin()+current_token+1;
+                    line.erase(it);
+                    line.insert(line.begin()+current_token+1, copy_first.begin(), copy_first.end());
+                }
+                
                 mem_pos += mem_spaces;
                 break;
             }case DATA:

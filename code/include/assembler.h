@@ -69,6 +69,7 @@ private:
     void labelLexicalAnalysis(std::string label);
     void instructionSintax(std::vector<std::string> aux);
     void lexicalAnalyzer(std::string, TokenType);
+    bool isParametersNumberValid(uint16_t, uint16_t );
     void firstPass(void);
     uint16_t labelAnalysis(std::vector<std::string>,uint16_t, uint16_t);
     Section sectionAnalysis(std::string);
