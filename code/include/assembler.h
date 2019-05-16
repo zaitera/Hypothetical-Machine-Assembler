@@ -27,7 +27,7 @@ private:
     //! Private atribute,
     /*!the file being assembled in our representation.*/
     TupleList file_being_assembled;
-    const std::map<std::string, uint8_t> instOpcodesMP = {
+    const std::map<std::string, uint8_t> inst_opcodes_MP = {
         {"ADD", 1},
         {"SUB", 2},
         {"MULT", 3},
@@ -43,7 +43,7 @@ private:
         {"OUTPUT", 13},
         {"STOP", 14}
     };
-    const std::map<std::string, uint8_t> memSpacesMP = {
+    const std::map<std::string, uint8_t> mem_spaces_MP = {
         {"ADD", 2},
         {"SUB", 2},
         {"MULT", 2},
@@ -59,7 +59,7 @@ private:
         {"OUTPUT", 2},
         {"STOP", 1},
     };   
-    std::map<std::string, uint16_t> symbolsTableMP;
+    std::map<std::string, std::pair<uint16_t,uint16_t>> symbols_table_MP;
     
     void spcharLexicalAnalysis(std::string special_char);
     void memoryParamLexicalAnalysis(std::string memparam);
@@ -70,7 +70,7 @@ private:
     void instructionSintax(std::vector<std::string> aux);
     void lexicalAnalyzer(std::string, TokenType);
     void firstPass(void);
-    uint16_t labelAnalysis(std::vector<std::string>,uint16_t);
+    uint16_t labelAnalysis(std::vector<std::string>,uint16_t, uint16_t);
     Section sectionAnalysis(std::string);
 
 public:

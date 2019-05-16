@@ -35,7 +35,7 @@ void Assembler::labelLexicalAnalysis(std::string label)
 
 void Assembler::instLexicalAnalysis(std::string instruction)
 {
-    if(instOpcodesMP.count(instruction)==0)
+    if(inst_opcodes_MP.count(instruction)==0)
     {
         std::string msg("Lexical error: »'");                
         msg = msg + instruction + "' instruction was not recognized ";
@@ -180,18 +180,18 @@ std::string maxWord(std::vector<std::string> const &lines)
     return *std::max_element(lines.begin(), lines.end(), size_less());
 }
 
-void printMAP(std::map<std::string, uint16_t> myMap)
+void printMAP(std::map<std::string, std::pair<uint16_t,uint16_t>> myMap)
 {
     std::cout << "_________MAPi__________"<<std::endl;
     for(auto elem : myMap)
     {
-        std::cout << elem.first << " -- " << elem.second << "\n";
+        std::cout << elem.first << " -- " << elem.second.first<<" line= " <<elem.second.second<< "\n";
     }
     std::cout << "_________MAPf__________"<<std::endl;
 
 }
 
-uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t mem_pos )
+uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t mem_pos, uint16_t line_num)
 {
     std::string errmsg;
     auto symbol_count = count(line.begin(), line.end(), ":");
@@ -199,7 +199,7 @@ uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t mem_po
     {
         if (line[1] == ":")
         {
-            if ( this->symbolsTableMP.count(line[0]) ==  0 )
+            if ( this->symbols_table_MP.count(line[0]) ==  0 )
             {
                 try
                 {
@@ -209,8 +209,9 @@ uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t mem_po
                 {
                     throw errmsg;
                 }
-                this->symbolsTableMP.insert( std::pair<std::string,uint16_t>(line[0],mem_pos) );
-                printMAP(symbolsTableMP);
+                auto aux = std::pair<uint16_t,uint16_t>(mem_pos,line_num);
+                this->symbols_table_MP.insert( std::pair<std::string,std::pair<uint16_t,uint16_t>>(line[0],aux) );
+                printMAP(symbols_table_MP);
                 return 2;
             }else
             {
@@ -242,6 +243,50 @@ Section Assembler::sectionAnalysis(std::string str)
         errmsg = "Syntatic error: »'"+str+"' is invalid section name ";
         throw errmsg;
     }
+}
+
+bool isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
+{
+    bool condition;
+    switch (inst_size)
+    {
+        case 4:
+            switch (present_in_line)
+            {
+                case 4:
+                    condition = false;
+                    break;
+                case 6:
+                    condition = false;
+                    break;
+                case 8:
+                    condition = false;
+                    break;
+                default:
+                    condition = true;
+                    break;
+            }
+            break;
+        case 1:
+            condition = (present_in_line == inst_size)? false : true;
+            break;                
+        default:
+            switch (present_in_line)
+            {
+                case 2:
+                    condition = false;
+                    break;
+                case 4:
+                    condition = false;
+                    break;
+                
+                default:
+                    condition = true;
+                    break;
+            }
+            break;
+    }
+    return condition;
 }
 void Assembler::firstPass(void)
 {
@@ -278,7 +323,7 @@ void Assembler::firstPass(void)
         }        
         try
         {
-            current_token = labelAnalysis(line, mem_pos);
+            current_token = labelAnalysis(line, mem_pos,i);
         }
         catch(std::string errmsg)
         {
@@ -300,18 +345,24 @@ void Assembler::firstPass(void)
                     errmsg = errmsg + "-> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
-                auto mem_spaces =  this->memSpacesMP.at(line[current_token]);
+
+                auto mem_spaces =  this->mem_spaces_MP.at(line[current_token]);
                 auto aux = (line[current_token] == "COPY")? mem_spaces+1:mem_spaces;
-                if (line.size()-current_token < aux || line.size()-current_token >aux )
+
+                if (isParametersNumberValid(aux, line.size()-current_token))
                 {                
                     errmsg = "Syntactic error: »'"+line[current_token]+"' instruction format or amount of parameter is invalid (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
                 }
                 try
                 {
-                    for (size_t i = 1; i < mem_spaces; i++)
+                    for (size_t i = 1; i < line.size()-current_token; i++)
                     {
-                        lexicalAnalyzer(line[current_token+(i*2-1)], memparameter); //i*2 -1 to consider the ',' between parameters
+                        if (line[current_token+i] != ",")
+                        {
+                            lexicalAnalyzer(line[current_token+i], memparameter); //i*2 -1 to consider the ',' between parameters
+                        }
+                        
                     }                
                 }
                 catch(std::string errmsg)
