@@ -378,7 +378,8 @@ void PreProcessor::processMacros(void)
         auto is_it_a_macro = std::find(ELEMENT_FBP(1, i).begin(), ELEMENT_FBP(1, i).end(), "MACRO");
         if (is_it_a_macro != ELEMENT_FBP(1, i).end())
             if (PreProcessor::insertInMacroNameTable(i, (is_it_a_macro - ELEMENT_FBP(1, i).begin())))
-                i--;
+                if (i!=0)
+                    i--;
         
         std::string first_token = ELEMENT_FBP(1,i)[0];
         auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
@@ -391,14 +392,13 @@ void PreProcessor::processMacros(void)
 TupleList PreProcessor::preProcess(void)
 {
     this->file_being_processed = removeUselessInfos(); 
-    //printTupleListFile();
     removeComments();
     this->table_EQU = parseDirectiveEQU();
     //printTupleTable(this->table_EQU);
     processEQUs();
     //printTupleListFile();
     processIFs();
-    //printTupleListFile();
+    printTupleListFile();
     processMacros();
     //printMNT();
     //printMDT();

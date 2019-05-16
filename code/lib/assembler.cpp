@@ -7,6 +7,21 @@ Assembler::Assembler(std::fstream *source)
 
 Assembler::~Assembler(){}
 
+void Assembler::printCurrentTupleList(void)
+{
+    
+    std::cout << "__________Current Tuple List___________"<<std::endl;
+    
+    for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
+    {
+        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_assembled[i])+1 << " ";
+        for(size_t j = 0; j != std::get<1>(this->file_being_assembled[i]).size(); j++ )
+            std::cout << std::get<1>(this->file_being_assembled[i])[j] << " ";
+        std::cout << std::endl;
+    } 
+    std::cout << "__________End Tuple List___________"<<std::endl;
+}
+
 void Assembler::labelLexicalAnalysis(std::string label)
 {
     if(!isalpha(label[0]))
@@ -32,7 +47,6 @@ void Assembler::labelLexicalAnalysis(std::string label)
         }
     }
 }
-
 void Assembler::instLexicalAnalysis(std::string instruction)
 {
     if(inst_opcodes_MP.count(instruction)==0)
@@ -133,7 +147,6 @@ void Assembler::spcharLexicalAnalysis(std::string special_char)
     }
     
 }
-
 void Assembler::lexicalAnalyzer(std::string token, TokenType type)
 {
     switch(type)
@@ -298,6 +311,7 @@ void Assembler::firstPass(void)
 {
     Section section = UNDEFINED;
     std::string errmsg;
+    uint16_t mem_pos_data = 0;
     uint16_t mem_pos = 0;
     uint16_t current_token;
     for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
@@ -329,7 +343,12 @@ void Assembler::firstPass(void)
         }        
         try
         {
-            current_token = labelAnalysis(line, mem_pos,i);
+            auto temp = current_token;
+            current_token = labelAnalysis(line, mem_pos, i);
+           
+            if (section == TEXT)
+                if ( (current_token-temp) > 0)
+                    std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin(), std::get<1>(this->file_being_assembled[i]).begin()+(current_token-temp));   
         }
         catch(std::string errmsg)
         {
@@ -421,6 +440,8 @@ void Assembler::firstPass(void)
                 mem_pos += mem_spaces;
                 break;
             }case DATA:
+                if (mem_pos_data == 0)
+                    mem_pos_data = i;
                 try
                 {
                     lexicalAnalyzer(line[current_token],datdirective);
@@ -479,6 +500,144 @@ void Assembler::firstPass(void)
         }
        
     }
+    this->index_data_section = mem_pos_data;
+                
+}
+
+void Assembler::semanticAnalyzerVectors(std::vector<std::string> line, size_t i)
+{
+    std::string errmsg;
+
+    auto mem_spaces = this->mem_spaces_MP.at(line[0]);
+    auto pos_mem1 = this->symbols_table_MP.at(line[1]);
+
+    if ( THIS_IS_NOT_STOP_OR_COPY(mem_spaces) )
+    {
+        if (THIS_IS_A_VECTOR(line.size()))
+        {
+            if (std::stoi(line[3]) < 0)
+            {
+                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;
+            }
+            auto size_vector = std::get<1>(this->file_being_assembled[i])[4];
+            if (std::stoi(line[3]) >= std::stoi(size_vector))
+            {
+                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;
+            }
+        }
+    }
+}
+
+void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
+{
+    std::string errmsg;
+        
+    if( this->symbols_table_MP.count(line[1]) == 0)
+    {
+        errmsg = "Semantic error:  missing labels -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+
+    auto opcode = this->inst_opcodes_MP.at(line[0]);
+    auto pos_mem1 = this->symbols_table_MP.at(line[1]);
+
+    if (THIS_IS_A_JUMP(opcode))
+    {
+        if(pos_mem1.second >= this->index_data_section)
+        {
+            errmsg = "Semantic error: Jump to invalid section -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;   
+        }
+    }
+    else 
+    {
+        if(pos_mem1.second < this->index_data_section)
+        {
+            errmsg = "Semantic error: Jump to invalid section -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;   
+        }
+        
+        auto line_label = std::get<1>(this->file_being_assembled[pos_mem1.second]);
+            
+        if (opcode == inst_opcodes_MP.at("DIV"))
+        {
+            if(line_label[2] == "CONST" && line_label[3] == "0")
+            {
+                errmsg = "Semantic error: Attempt to divide by zero -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;   
+            }
+        }
+        else if (opcode == inst_opcodes_MP.at("INPUT"))
+        {
+            if(line_label[2] == "CONST")
+            {
+                errmsg = "Semantic error: Attempt to change a constant value -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;   
+            }
+        }
+        else if (opcode == inst_opcodes_MP.at("COPY"))
+        {
+            if( this->symbols_table_MP.count(line[3]) == 0)
+            {
+                errmsg = "Semantic error: missing labels -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;   
+            }
+            if(line_label[2] == "CONST")
+            {
+                errmsg = "Semantic error: Attempt to change a constant value -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;   
+            }
+        }
+    }
+}
+
+void Assembler::secondPass(void)
+{
+    std::string errmsg;
+    for(size_t i = 1; i != this->file_being_assembled.size(); i++ )
+    {
+        auto line = std::get<1>(this->file_being_assembled[i]);
+        
+        if (line.size()==1) continue;
+        if (line[1] == "DATA") break;
+
+        auto mem_spaces =  this->mem_spaces_MP.at(line[0]);
+        
+        try
+        {
+            semanticAnalyzerGeneric(line, i);
+            semanticAnalyzerVectors(line, i);
+        }
+        catch(std::string errmsg)
+        {
+            throw errmsg;
+        }
+        
+        auto pos_mem1 = this->symbols_table_MP.at(line[1]);
+
+        if (mem_spaces == 2)
+        {
+            if (line.size() == mem_spaces)
+            {    
+                std::get<1>(this->file_being_assembled[i])[1] = std::to_string( pos_mem1.first );
+            }
+            else
+            {
+                auto temp = pos_mem1.first;
+                temp += std::stoi(line[3]);
+                std::get<1>(this->file_being_assembled[i])[1] = std::to_string( + std::stoi(line[3]));
+            }
+        }
+        else if (mem_spaces == 3)
+        {
+            std::get<1>(this->file_being_assembled[i])[1] = std::to_string( (this->symbols_table_MP.at(line[1])).first );
+            std::get<1>(this->file_being_assembled[i])[3] = std::to_string( (this->symbols_table_MP.at(line[3])).first );
+        }
+
+        printCurrentTupleList();
+    }
 }
 
 void Assembler::assemble(void)
@@ -487,6 +646,7 @@ void Assembler::assemble(void)
     this->file_being_assembled = pre_processor.preProcess();
     try{
         firstPass();
+        secondPass();
     } catch(std::string errmsg)
     {
         std::cout<<errmsg<<std::endl;
