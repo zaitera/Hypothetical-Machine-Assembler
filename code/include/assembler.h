@@ -2,6 +2,18 @@
 #define ASSEMBLER_H
 #include <preprocessor.h>
 
+#define THIS_IS_NOT_STOP_OR_COPY(A) (A == 2)
+#define THIS_IS_A_VECTOR(A) (A == 4)
+#define THIS_IS_A_JUMP(A) (A >= inst_opcodes_MP.at("JMP")) && (A <= inst_opcodes_MP.at("JMPZ"))
+
+enum InstructionType{
+    JUMPS = 0,
+    INPUT = 1,
+    COPY = 2,
+    DIV = 3,
+    OTHER = 4
+};
+
 enum TokenType{
     spchar = 0,
     inst = 1,
@@ -23,7 +35,7 @@ private:
     //! A private pointer to a file.
     /*! points to the file that contains the source code to be processed. */
     std::fstream* source_code_file;
-    
+    size_t index_data_section;
     //! Private atribute,
     /*!the file being assembled in our representation.*/
     TupleList file_being_assembled;
@@ -61,6 +73,7 @@ private:
     };   
     std::map<std::string, std::pair<uint16_t,uint16_t>> symbols_table_MP;
     
+    void printCurrentTupleList(void);
     void spcharLexicalAnalysis(std::string special_char);
     void memoryParamLexicalAnalysis(std::string memparam);
     void constValLexicalAnalysis(std::string instruction);
@@ -70,6 +83,9 @@ private:
     void instructionSintax(std::vector<std::string> aux);
     void lexicalAnalyzer(std::string, TokenType);
     void firstPass(void);
+    void secondPass(void);
+    void semanticAnalyzerGeneric(std::vector<std::string> line, size_t i);
+    void semanticAnalyzerVectors(std::vector<std::string> line, size_t i);
     uint16_t labelAnalysis(std::vector<std::string>,uint16_t, uint16_t);
     Section sectionAnalysis(std::string);
 
