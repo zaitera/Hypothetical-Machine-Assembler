@@ -244,7 +244,7 @@ uint16_t Assembler::labelAnalysis(std::vector<std::string> line, uint16_t mem_po
                 }
                 auto aux = std::pair<uint16_t,uint16_t>(mem_pos,line_num);
                 this->symbols_table_MP.insert( std::pair<std::string,std::pair<uint16_t,uint16_t>>(line[0],aux) );
-                printMAP(symbols_table_MP);
+                //printMAP(symbols_table_MP);
                 return 2;
             }else
             {
