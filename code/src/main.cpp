@@ -6,7 +6,7 @@ int main(int argc, char ** argv)
     
     if (argc!=2)
     {
-        std::cerr<<"Arguments number is not valid, this programs recieve the file to be assembler as a parameter."<<std::endl;
+        std::cerr<<"Arguments number is not valid, this program recieves the name of file to be assembled as an argument."<<std::endl;
         return 0;
     }else
     {
