@@ -87,6 +87,7 @@ private:
     void secondPass(void);
     void semanticAnalyzerGeneric(std::vector<std::string> line, size_t i);
     void semanticAnalyzerVectors(std::vector<std::string> line, size_t i);
+    void semanticAnalyzerCopy(std::vector<std::string> line, size_t i);
     uint16_t labelAnalysis(std::vector<std::string>,uint16_t, uint16_t);
     Section sectionAnalysis(std::string);
 

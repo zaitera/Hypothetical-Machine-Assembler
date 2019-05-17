@@ -93,6 +93,7 @@ private:
         This method is used to print the file being processed to the console screen, helps for debugging
     */
     void writePreProcessedFile(void);
+    void printTupleListFile(void);
     void printMDT(void);
     void printMNT(void);
     void printTupleTable(Table);

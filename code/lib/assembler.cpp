@@ -515,15 +515,21 @@ void Assembler::semanticAnalyzerVectors(std::vector<std::string> line, size_t i)
     {
         if (THIS_IS_A_VECTOR(line.size()))
         {
-            if (std::stoi(line[3]) < 0)
+            if (std::get<1>(this->file_being_assembled[pos_mem1.second]).size() == 3)
             {
-                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                 throw errmsg;
             }
-            auto size_vector = std::get<1>(this->file_being_assembled[i])[4];
+            if (std::stoi(line[3]) < 0)
+            {
+                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                throw errmsg;
+            }
+            auto size_vector = std::get<1>(this->file_being_assembled[pos_mem1.second])[3];
+    
             if (std::stoi(line[3]) >= std::stoi(size_vector))
             {
-                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                 throw errmsg;
             }
         }
@@ -536,7 +542,7 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
         
     if( this->symbols_table_MP.count(line[1]) == 0)
     {
-        errmsg = "Semantic error:  missing labels -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        errmsg = "Semantic error:  missing labels -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
 
@@ -555,7 +561,7 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
     {
         if(pos_mem1.second < this->index_data_section)
         {
-            errmsg = "Semantic error: Jump to invalid section -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
         }
         
@@ -563,7 +569,7 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
             
         if (opcode == inst_opcodes_MP.at("DIV"))
         {
-            if(line_label[2] == "CONST" && line_label[3] == "0")
+            if(line_label[2] == "CONST" && std::stoi(line_label[3]) == 0)
             {
                 errmsg = "Semantic error: Attempt to divide by zero -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                 throw errmsg;   
@@ -577,18 +583,103 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
                 throw errmsg;   
             }
         }
-        else if (opcode == inst_opcodes_MP.at("COPY"))
+       
+    }
+}
+
+void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
+{
+    std::string errmsg;
+    auto opcode = this->inst_opcodes_MP.at(line[0]);
+    auto mem_spaces =  this->mem_spaces_MP.at(line[0]);
+    
+    if( this->symbols_table_MP.count(line[1]) == 0)
+    {
+        errmsg = "Semantic error: missing label of first argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+    if(this->symbols_table_MP.at(line[1]).second < this->index_data_section)
+    {
+        errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+    auto pos_mem1 = this->symbols_table_MP.at(line[1]);
+    auto line_label_1 = std::get<1>(this->file_being_assembled[pos_mem1.second]);
+
+    auto pos_second_argument = 3;
+
+    if(line_label_1[2] == "CONST")
+    {
+        errmsg = "Semantic error: Attempt to change a constant value -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+
+    if(line[2] == "+")
+    {
+        pos_second_argument = 5;
+    }
+    if( this->symbols_table_MP.count(line[pos_second_argument]) == 0)
+    {
+        errmsg = "Semantic error: missing label of second argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+    if(this->symbols_table_MP.at(line[pos_second_argument]).second < this->index_data_section)
+    {
+        errmsg = "Semantic error: Invalid argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
+    }
+    
+    auto line_label_2 = std::get<1>(this->file_being_assembled[this->symbols_table_MP.at(line[pos_second_argument]).second]);
+    auto check_vector_second = 0;
+    
+    if(pos_second_argument == 5)
+    {
+        
+        if (line_label_1.size() == 3)
         {
-            if( this->symbols_table_MP.count(line[3]) == 0)
-            {
-                errmsg = "Semantic error: missing labels -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
-                throw errmsg;   
-            }
-            if(line_label[2] == "CONST")
-            {
-                errmsg = "Semantic error: Attempt to change a constant value -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
-                throw errmsg;   
-            }
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;   
+        }
+        if (std::stoi(line[3]) < 0)
+        {
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;
+        }
+        auto size_vector = std::get<1>(this->file_being_assembled[pos_mem1.second])[3];
+        if (std::stoi(line[3]) >= std::stoi(size_vector))
+        {
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;
+        }
+        if (line.size() > pos_second_argument+1)
+            check_vector_second = 7;
+    }
+    else
+    {
+        if (line.size()>mem_spaces+1)
+            check_vector_second = 5;
+    }
+    if (check_vector_second != 0)
+    {
+        /*check for overflow in second argument*/
+        if (std::stoi(line[check_vector_second]) < 0)
+        {
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;
+        }
+
+        auto pos_mem2 = this->symbols_table_MP.at(line[pos_second_argument]).second;
+        if (std::get<1>(this->file_being_assembled[pos_mem2]).size() == 3)
+        {
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;   
+        }
+        auto size_vector = std::get<1>(this->file_being_assembled[pos_mem2])[3];
+
+        if (std::stoi(line[check_vector_second]) >= std::stoi(size_vector))
+        {
+            errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            throw errmsg;
         }
     }
 }
@@ -596,19 +687,21 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
 void Assembler::secondPass(void)
 {
     std::string errmsg;
-    for(size_t i = 1; i != this->file_being_assembled.size(); i++ )
+    for(size_t i = 1; i < this->index_data_section-1; i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
-        
         if (line.size()==1) continue;
-        if (line[1] == "DATA") break;
-
         auto mem_spaces =  this->mem_spaces_MP.at(line[0]);
         
         try
         {
-            semanticAnalyzerGeneric(line, i);
-            semanticAnalyzerVectors(line, i);
+            if (line[0] == "COPY")
+                semanticAnalyzerCopy(line, i);
+            else
+            {
+                semanticAnalyzerGeneric(line, i);
+                semanticAnalyzerVectors(line, i);
+            }
         }
         catch(std::string errmsg)
         {
@@ -616,28 +709,78 @@ void Assembler::secondPass(void)
         }
         
         auto pos_mem1 = this->symbols_table_MP.at(line[1]);
+        std::get<1>(this->file_being_assembled[i])[0] = std::to_string(this->inst_opcodes_MP.at(line[0]));
 
         if (mem_spaces == 2)
         {
             if (line.size() == mem_spaces)
-            {    
                 std::get<1>(this->file_being_assembled[i])[1] = std::to_string( pos_mem1.first );
-            }
             else
             {
-                auto temp = pos_mem1.first;
-                temp += std::stoi(line[3]);
-                std::get<1>(this->file_being_assembled[i])[1] = std::to_string( + std::stoi(line[3]));
+                auto temp = pos_mem1.first + std::stoi(line[3]);
+                std::get<1>(this->file_being_assembled[i])[1] = std::to_string(temp);
+                std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+2,std::get<1>(this->file_being_assembled[i]).end());
             }
         }
         else if (mem_spaces == 3)
         {
-            std::get<1>(this->file_being_assembled[i])[1] = std::to_string( (this->symbols_table_MP.at(line[1])).first );
-            std::get<1>(this->file_being_assembled[i])[3] = std::to_string( (this->symbols_table_MP.at(line[3])).first );
+            if (line.size() == (mem_spaces+1) )
+            { 
+                std::get<1>(this->file_being_assembled[i])[1] = std::to_string( (this->symbols_table_MP.at(line[1])).first );
+                std::get<1>(this->file_being_assembled[i])[3] = std::to_string( (this->symbols_table_MP.at(line[3])).first );
+                std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+2);
+            }
+            else if (line.size() == (mem_spaces+1 + 2) )
+            {   
+                if (line[2] == "+")
+                {
+                    auto temp = this->symbols_table_MP.at(line[1]).first + std::stoi(line[3]);
+                    std::get<1>(this->file_being_assembled[i])[1] = std::to_string(temp);
+                    std::get<1>(this->file_being_assembled[i])[2] = std::to_string( (this->symbols_table_MP.at(line[5])).first );
+                }
+                else
+                {
+                    auto temp = this->symbols_table_MP.at(line[3]).first + std::stoi(line[5]);
+                    std::get<1>(this->file_being_assembled[i])[2] = std::to_string(temp);
+                    std::get<1>(this->file_being_assembled[i])[1] = std::to_string( (this->symbols_table_MP.at(line[1])).first );
+                }
+                std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+3,std::get<1>(this->file_being_assembled[i]).end());
+            }
+            else
+            {
+                auto temp = this->symbols_table_MP.at(line[1]).first + std::stoi(line[3]);
+                std::get<1>(this->file_being_assembled[i])[1] = std::to_string(temp);
+                temp = this->symbols_table_MP.at(line[5]).first + std::stoi(line[7]);
+                std::get<1>(this->file_being_assembled[i])[2] = std::to_string(temp);
+                std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+3,std::get<1>(this->file_being_assembled[i]).end());
+            }
         }
-
-        printCurrentTupleList();
     }
+    for(size_t i = this->index_data_section; i != this->file_being_assembled.size(); i++ )
+    {
+        auto line = std::get<1>(this->file_being_assembled[i]);
+        if (line.size()<3)
+            continue;
+        else if (line.size()==3)
+            std::get<1>(this->file_being_assembled[i])[0] = "00";
+        else if (line[2] == "CONST")
+            std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) std::stoi(std::get<1>(this->file_being_assembled[i])[3]));
+        else
+        {
+            auto count =  std::stoi(std::get<1>(this->file_being_assembled[i])[3]);
+            std::get<1>(this->file_being_assembled[i])[0] = "00";
+            std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
+            std::vector <std::string> aux1;
+            aux1.push_back("00");
+            std::tuple<uint16_t,std::vector <std::string>> aux2 = make_tuple(0, aux1);
+            for (size_t j = 0; j < count; j++)
+                this->file_being_assembled.insert(this->file_being_assembled.begin()+i, aux2);        
+            continue;
+        }
+        std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
+    }
+    this->file_being_assembled.erase(this->file_being_assembled.begin()+this->index_data_section-1);
+    this->file_being_assembled.erase(this->file_being_assembled.begin());
 }
 
 void Assembler::assemble(void)
@@ -655,4 +798,5 @@ void Assembler::assemble(void)
     {
         std::cout<<errmsg<<std::endl;
     }
+    printCurrentTupleList();
 }
