@@ -107,24 +107,25 @@ TupleList PreProcessor::removeUselessInfos(void)
     return tuple_file;
 }
 
-void PreProcessor::printTupleListFile()
+void PreProcessor::writePreProcessedFile(void)
 {
-    std::cout << "_____________________"<<std::endl;
+    //std::cout << "_____________________"<<std::endl;
     std::fstream output;
     output.open("test.pre",std::ios::out );
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
-        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
+        //std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
         for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ ){
             auto aux = std::get<1>(this->file_being_processed[i])[j];
-            std::cout << aux << " ";
+            //std::cout << aux << " ";
             output << aux<< " ";
         }
-        std::cout << std::endl;
+        //std::cout << std::endl;
         output<<std::endl;
     } 
     output.close();
-    std::cout << "_____________________"<<std::endl;
+
+    std::cout << "Pre-processed file written successfully!"<<std::endl;
 }
 
 
@@ -391,17 +392,16 @@ void PreProcessor::processMacros(void)
 
 TupleList PreProcessor::preProcess(void)
 {
+    std::cout<<"Pre-processing file..."<<std::endl;
     this->file_being_processed = removeUselessInfos(); 
     removeComments();
     this->table_EQU = parseDirectiveEQU();
     //printTupleTable(this->table_EQU);
     processEQUs();
-    //printTupleListFile();
     processIFs();
-    printTupleListFile();
     processMacros();
     //printMNT();
     //printMDT();
-    printTupleListFile();
+    writePreProcessedFile();
     return  this->file_being_processed;
 }

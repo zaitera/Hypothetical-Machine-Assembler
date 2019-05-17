@@ -645,8 +645,12 @@ void Assembler::assemble(void)
     PreProcessor pre_processor(this->source_code_file);
     this->file_being_assembled = pre_processor.preProcess();
     try{
+        std::cout<<"Running assembler first pass..."<<std::endl;
         firstPass();
+        std::cout<<"First pass completed successfuly!"<<std::endl;
+        std::cout<<"Running assembler second pass..."<<std::endl;
         secondPass();
+        std::cout<<"Second pass completed successfuly!"<<std::endl;
     } catch(std::string errmsg)
     {
         std::cout<<errmsg<<std::endl;
