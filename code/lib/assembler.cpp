@@ -143,9 +143,10 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
 {
     
     bool found_x = false;
+    uint16_t iterator = 0 ;
     for(char& c : instruction) 
     {
-        if (c == 'X')
+        if (c == 'X' && iterator >0 && instruction[iterator-1] == '0')
         {
             found_x = true;
             continue;
@@ -173,6 +174,7 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
                 break;
             }
         }
+        iterator++ ;
     }
 }
 void Assembler::spcharLexicalAnalysis(std::string special_char)
