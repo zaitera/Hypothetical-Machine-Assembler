@@ -109,6 +109,7 @@ private:
     void processMacros(void);
 
 public:
+    std::string file_name;
     //! Class constructor, receives a pointer to the source file.
     /*!
         constructs the object and indicates the file to be processed.

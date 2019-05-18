@@ -110,8 +110,10 @@ TupleList PreProcessor::removeUselessInfos(void)
 void PreProcessor::writePreProcessedFile(void)
 {
     //std::cout << "_____________________"<<std::endl;
+    std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".pre";;
+
     std::fstream output;
-    output.open("test.pre",std::ios::out );
+    output.open(pre_filename,std::ios::out );
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
         //std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";

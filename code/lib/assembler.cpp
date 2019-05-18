@@ -21,7 +21,28 @@ void Assembler::printCurrentTupleList(void)
     } 
     std::cout << "__________End Tuple List___________"<<std::endl;
 }
+void Assembler::writeAssembledFile(void)
+{
+    //std::cout << "_____________________"<<std::endl;
+    std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".o";;
 
+    std::fstream output;
+    output.open(pre_filename,std::ios::out );
+    for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
+    {
+        //std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
+        for(size_t j = 0; j != std::get<1>(this->file_being_assembled[i]).size(); j++ ){
+            auto aux = std::get<1>(this->file_being_assembled[i])[j];
+            //std::cout << aux << " ";
+            output << aux<< " ";
+        }
+        //std::cout << std::endl;
+        //output<<std::endl;
+    } 
+    output.close();
+
+    std::cout << "Object file written successfully!"<<std::endl;
+}
 void Assembler::labelLexicalAnalysis(std::string label)
 {
     if(!isalpha(label[0]))
@@ -281,6 +302,7 @@ Section Assembler::sectionAnalysis(std::string str)
 bool Assembler::isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
 {
     bool condition;
+    
     switch (inst_size)
     {
         case 4:
@@ -357,7 +379,6 @@ void Assembler::firstPass(void)
         }
 
         if (current_token >= line.size())   continue;
-        
         switch (section)
         {
             case TEXT:{
@@ -382,8 +403,7 @@ void Assembler::firstPass(void)
                 bool pendent_first = false;
                 bool pendent_last = false;
                 std::vector<std::string> copy_last;
-
-                if (line.end()[-2] == "+")
+                if ( line.end()[-1] != "STOP" &&  line.end()[-2] == "+")
                 {
                     pendent_last = true;
                     auto joined_parameter = line.end()[-3] + line.end()[-2] + line.end()[-1];
@@ -394,7 +414,7 @@ void Assembler::firstPass(void)
                 }
 
                 std::vector<std::string> copy_first;
-                if (line[current_token] == "COPY" && line[current_token+2]=="+")
+                if (line.end()[-1] != "STOP" && line[current_token] == "COPY" && line[current_token+2]=="+")
                 {
                     pendent_first = true;
                     auto joined_parameter = line[current_token+1] + line[current_token+2] + line[current_token+3];
@@ -500,7 +520,7 @@ void Assembler::firstPass(void)
         }
        
     }
-    this->index_data_section = mem_pos_data;
+    this->memory_positions_counted = mem_pos_data;
                 
 }
 
@@ -551,7 +571,7 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
 
     if (THIS_IS_A_JUMP(opcode))
     {
-        if(pos_mem1.second >= this->index_data_section)
+        if(pos_mem1.second >= this->memory_positions_counted)
         {
             errmsg = "Semantic error: Jump to invalid section -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
@@ -559,7 +579,7 @@ void Assembler::semanticAnalyzerGeneric(std::vector<std::string> line, size_t i)
     }
     else 
     {
-        if(pos_mem1.second < this->index_data_section)
+        if(pos_mem1.second < this->memory_positions_counted)
         {
             errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
@@ -598,7 +618,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         errmsg = "Semantic error: missing label of first argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-    if(this->symbols_table_MP.at(line[1]).second < this->index_data_section)
+    if(this->symbols_table_MP.at(line[1]).second < this->memory_positions_counted)
     {
         errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
@@ -623,7 +643,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         errmsg = "Semantic error: missing label of second argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-    if(this->symbols_table_MP.at(line[pos_second_argument]).second < this->index_data_section)
+    if(this->symbols_table_MP.at(line[pos_second_argument]).second < this->memory_positions_counted)
     {
         errmsg = "Semantic error: Invalid argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
@@ -687,7 +707,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
 void Assembler::secondPass(void)
 {
     std::string errmsg;
-    for(size_t i = 1; i < this->index_data_section-1; i++ )
+    for(size_t i = 1; i < this->memory_positions_counted-1; i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
         if (line.size()==1) continue;
@@ -697,7 +717,7 @@ void Assembler::secondPass(void)
         {
             if (line[0] == "COPY")
                 semanticAnalyzerCopy(line, i);
-            else
+            else if (line[0] != "STOP")
             {
                 semanticAnalyzerGeneric(line, i);
                 semanticAnalyzerVectors(line, i);
@@ -711,7 +731,7 @@ void Assembler::secondPass(void)
         auto pos_mem1 = this->symbols_table_MP.at(line[1]);
         std::get<1>(this->file_being_assembled[i])[0] = std::to_string(this->inst_opcodes_MP.at(line[0]));
 
-        if (mem_spaces == 2)
+        if (mem_spaces == 2 )
         {
             if (line.size() == mem_spaces)
                 std::get<1>(this->file_being_assembled[i])[1] = std::to_string( pos_mem1.first );
@@ -756,7 +776,7 @@ void Assembler::secondPass(void)
             }
         }
     }
-    for(size_t i = this->index_data_section; i != this->file_being_assembled.size(); i++ )
+    for(size_t i = this->memory_positions_counted; i != this->file_being_assembled.size(); i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
         if (line.size()<3)
@@ -779,13 +799,14 @@ void Assembler::secondPass(void)
         }
         std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
     }
-    this->file_being_assembled.erase(this->file_being_assembled.begin()+this->index_data_section-1);
+    this->file_being_assembled.erase(this->file_being_assembled.begin()+this->memory_positions_counted-1);
     this->file_being_assembled.erase(this->file_being_assembled.begin());
 }
 
 void Assembler::assemble(void)
 {
     PreProcessor pre_processor(this->source_code_file);
+    pre_processor.file_name = this->file_name;
     this->file_being_assembled = pre_processor.preProcess();
     try{
         std::cout<<"Running assembler first pass..."<<std::endl;
@@ -794,9 +815,10 @@ void Assembler::assemble(void)
         std::cout<<"Running assembler second pass..."<<std::endl;
         secondPass();
         std::cout<<"Second pass completed successfuly!"<<std::endl;
+        printCurrentTupleList();
+        writeAssembledFile();    
     } catch(std::string errmsg)
     {
         std::cout<<errmsg<<std::endl;
     }
-    printCurrentTupleList();
 }

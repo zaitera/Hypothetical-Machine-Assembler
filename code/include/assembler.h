@@ -35,7 +35,7 @@ private:
     //! A private pointer to a file.
     /*! points to the file that contains the source code to be processed. */
     std::fstream* source_code_file;
-    size_t index_data_section;
+    size_t memory_positions_counted;
     //! Private atribute,
     /*!the file being assembled in our representation.*/
     TupleList file_being_assembled;
@@ -73,6 +73,7 @@ private:
     };   
     std::map<std::string, std::pair<uint16_t,uint16_t>> symbols_table_MP;
     
+    void writeAssembledFile(void);
     void printCurrentTupleList(void);
     void spcharLexicalAnalysis(std::string special_char);
     void memoryParamLexicalAnalysis(std::string memparam);
@@ -92,6 +93,7 @@ private:
     Section sectionAnalysis(std::string);
 
 public:
+    std::string file_name;
     //! Class constructor, receives a pointer to the source file.
     /*!
         constructs the object and indicates the file to be processed.
