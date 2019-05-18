@@ -141,16 +141,37 @@ void Assembler::memoryParamLexicalAnalysis(std::string memparam)
 }
 void Assembler::constValLexicalAnalysis(std::string instruction)
 {
+    
+    bool found_x = false;
     for(char& c : instruction) 
     {
-        if(!isdigit(c) && c != '+' && c != '-'&& c != 'X')
+        if (c == 'X')
         {
-            std::string msg("Lexical error: »'");                
-            msg = msg + instruction + "' constant value contains a non-numeric related character '";
-            msg.insert(msg.end(),1,c); 
-            msg.insert(msg.end(),1,'\''); 
-            throw msg;
-            break;
+            found_x = true;
+            continue;
+        }
+        if (found_x)
+        {
+            if(!isxdigit(c))
+            {
+                std::string msg("Lexical error: »'");                
+                msg = msg + instruction + "' const value contains a non-hexadecimal character '";
+                msg.insert(msg.end(),1,c); 
+                msg.insert(msg.end(),1,'\''); 
+                throw msg;
+                break;
+            }
+        }else
+        {
+            if(!isdigit(c))
+            {
+                std::string msg("Lexical error: »'");                
+                msg = msg + instruction + "' const value seems to have non numeric character '";
+                msg.insert(msg.end(),1,c); 
+                msg.insert(msg.end(),1,'\''); 
+                throw msg;
+                break;
+            }
         }
     }
 }
