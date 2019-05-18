@@ -834,22 +834,27 @@ void Assembler::allocateMemorySpace()
     for(size_t i = this->memory_positions_counted; i != this->file_being_assembled.size(); i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
-        if (line.size()<3)
-            continue;
-        else if (line.size()==3)
+        /*check if it'a just space*/
+        if (line.size()==3)
             std::get<1>(this->file_being_assembled[i])[0] = "00";
         else if (line[2] == "CONST")
+        {
             std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) std::stoi(std::get<1>(this->file_being_assembled[i])[3]));
+        }
         else
         {
             auto count =  std::stoi(std::get<1>(this->file_being_assembled[i])[3]);
-            std::get<1>(this->file_being_assembled[i])[0] = "00";
-            std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
             std::vector <std::string> aux1;
             aux1.push_back("00");
             std::tuple<uint16_t,std::vector <std::string>> aux2 = make_tuple(0, aux1);
+            
+            std::get<1>(this->file_being_assembled[i])[0] = "00";
+            std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
+            
             for (size_t j = 0; j < count; j++)
-                this->file_being_assembled.insert(this->file_being_assembled.begin()+i, aux2);        
+                this->file_being_assembled.insert(this->file_being_assembled.begin()+i, aux2);  
+
+            i+=count;
             continue;
         }
         std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
