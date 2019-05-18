@@ -2,10 +2,6 @@
 #define ASSEMBLER_H
 #include <preprocessor.h>
 
-#define THIS_IS_NOT_STOP_OR_COPY(A) (A == 2)
-#define THIS_IS_A_VECTOR(A) (A == 4)
-#define THIS_IS_A_JUMP(A) (A >= inst_opcodes_MP.at("JMP")) && (A <= inst_opcodes_MP.at("JMPZ"))
-
 enum InstructionType{
     JUMPS = 0,
     INPUT = 1,
@@ -86,9 +82,13 @@ private:
     bool isParametersNumberValid(uint16_t, uint16_t );
     void firstPass(void);
     void secondPass(void);
-    void semanticAnalyzerGeneric(std::vector<std::string> line, size_t i);
+
+    void semanticAnalyzer(std::vector<std::string> line, size_t vector_index);
+    void semanticAnalyzerLabel(std::vector<std::string> line, size_t i);
     void semanticAnalyzerVectors(std::vector<std::string> line, size_t i);
     void semanticAnalyzerCopy(std::vector<std::string> line, size_t i);
+    void swapLabelbyAddress(std::vector<std::string> line, size_t vector_index);
+    void allocateMemorySpace();
     uint16_t labelAnalysis(std::vector<std::string>,uint16_t, uint16_t);
     Section sectionAnalysis(std::string);
 
