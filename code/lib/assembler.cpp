@@ -434,7 +434,7 @@ void Assembler::firstPass(void)
 
                 try
                 {
-                    for (size_t i = current_token+1; i < line.size(); i++)
+                    for (uint16_t i = current_token+1; i < line.size(); i++)
                     {
                         if (i == current_token+2)
                         {
@@ -481,7 +481,7 @@ void Assembler::firstPass(void)
 
                 if (line[current_token] == "CONST")
                 {
-                    if ( line.size()>current_token+2 && line[current_token+1] == "+")
+                    if ( (uint16_t)line.size()>current_token+2 && line[current_token+1] == "+")
                     {
                         auto joined_parameter = line[current_token+1] + line[current_token+2];
                         line[current_token+1] = joined_parameter;
@@ -625,7 +625,6 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
 void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
 {
     std::string errmsg;
-    auto opcode = this->inst_opcodes_MP.at(line[0]);
     auto mem_spaces =  this->mem_spaces_MP.at(line[0]);
     auto label = line[1];
     auto memory_positions_firs_label = this->symbols_table_MP.at(label);
@@ -695,13 +694,13 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
             throw errmsg;
         }
         /*check if the second label is a vector too*/
-        if (line.size() > pos_second_label+1)
+        if ((uint16_t)line.size() > pos_second_label+1)
             check_vector_second = 7;
     }
     else
     {
         /*check if the second label is a vector*/
-        if (line.size()>mem_spaces+1)
+        if ((uint16_t)line.size()>mem_spaces+1)
             check_vector_second = 5;
     }
     /*the second label is a vector too*/
@@ -758,7 +757,7 @@ void Assembler::swapLabelbyAddress(std::vector<std::string> line, size_t vector_
     
     if (line[0] == "COPY")
     {
-        if ( THERE_IS_AN_NO_VECTOR_IN_THE_OPERAND((mem_spaces+1),line.size()) )
+        if ( THERE_IS_AN_NO_VECTOR_IN_THE_OPERAND((mem_spaces+1),(uint16_t)line.size()) )
         { 
             std::get<1>(this->file_being_assembled[vector_index])[1] = \
                     std::to_string( (this->symbols_table_MP.at(line[1])).first );
@@ -768,7 +767,7 @@ void Assembler::swapLabelbyAddress(std::vector<std::string> line, size_t vector_
                     std::get<1>(this->file_being_assembled[vector_index]).begin()+2);
         }
         /*One of the operands is a vector*/
-        else if (line.size() == (mem_spaces+1+2) )
+        else if ((uint16_t)line.size() == (mem_spaces+1+2) )
         {   
             if (line[2] == "+")
             {
@@ -851,7 +850,7 @@ void Assembler::allocateMemorySpace()
             std::get<1>(this->file_being_assembled[i])[0] = "00";
             std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
             
-            for (size_t j = 0; j < count; j++)
+            for (uint16_t j = 0; j < count; j++)
                 this->file_being_assembled.insert(this->file_being_assembled.begin()+i, aux2);  
 
             i+=count;
