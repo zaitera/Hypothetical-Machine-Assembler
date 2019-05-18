@@ -646,7 +646,6 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
 void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
 {
     std::string errmsg;
-    auto opcode = this->inst_opcodes_MP.at(line[0]);
     auto mem_spaces =  this->mem_spaces_MP.at(line[0]);
     auto label = line[1];
     auto memory_positions_firs_label = this->symbols_table_MP.at(label);
@@ -860,37 +859,22 @@ void Assembler::allocateMemorySpace()
             std::get<1>(this->file_being_assembled[i])[0] = "00";
         else if (line[2] == "CONST")
         {
-            auto value = std::get<1>(this->file_being_assembled[i])[3];
-            int value_decimal;
-            if (value[0] == 'X')
-            {
-                std::cout << "Warning: Hexadecimal declared as 'x----' and not as '0x----' -> line " 
-                        << std::to_string(i+1) << " of preprocessed AND line " 
-                        << std::to_string(std::get<0>(this->file_being_assembled[i])+1) 
-                        << " of original source code." << std::endl;
-                value.insert(0,1,'0');
-                value_decimal = (int) std::stoul(value, nullptr, 16);
-            }
-            else if (value[1] == 'X')
-            {
-                value_decimal = (int) std::stoul(value, nullptr, 16);
-            }
-            else
-                value_decimal = std::stoi(value);
-            if (value_decimal != ((value_decimal<<16)>>16) )
-                std::cout << "Warning: Overflow detection in const statement. The pseudo-assembly is 16 bits" 
-                        << std::to_string(i+1) << " of preprocessed AND line " 
-                        << std::to_string(std::get<0>(this->file_being_assembled[i])+1) 
-                        << " of original source code." << std::endl;
-            std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) value_decimal);
-            
+            std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) std::stoi(std::get<1>(this->file_being_assembled[i])[3]));
         }
-        /*It's a vector*/
         else
         {
             auto count =  std::stoi(std::get<1>(this->file_being_assembled[i])[3]);
-            std::vector <std::string> aux1{(long unsigned int)count, "00"};
-            std::get<1>(this->file_being_assembled[i]) = aux1;
+            std::vector <std::string> aux1;
+            aux1.push_back("00");
+            std::tuple<uint16_t,std::vector <std::string>> aux2 = make_tuple(0, aux1);
+            
+            std::get<1>(this->file_being_assembled[i])[0] = "00";
+            std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
+            
+            for (uint16_t j = 0; j < count; j++)
+                this->file_being_assembled.insert(this->file_being_assembled.begin()+i, aux2);  
+
+            i+=count;
             continue;
         }
         std::get<1>(this->file_being_assembled[i]).erase(std::get<1>(this->file_being_assembled[i]).begin()+1,std::get<1>(this->file_being_assembled[i]).end());
