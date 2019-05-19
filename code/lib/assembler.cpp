@@ -687,13 +687,6 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         throw errmsg;   
     }
 
-    /*Check if first label is a CONST*/
-    if(line_first_label[2] == "CONST")
-    {
-        errmsg = "Semantic error: Attempt to change a constant value -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
-        throw errmsg;   
-    }
-
     /*if the first label is a vector*/
     if(pos_second_label == 5)
     {
@@ -725,6 +718,14 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         /*check if the second label is a vector*/
         if ((uint16_t)line.size()>mem_spaces+1)
             check_vector_second = 5;
+    }
+
+     /*Check if second label is a CONST*/
+    if(std::get<1>(this->file_being_assembled[this->symbols_table_MP.at(\
+            line[pos_second_label]).second])[2] == "CONST")
+    {
+        errmsg = "Semantic error: Attempt to change a constant value -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        throw errmsg;   
     }
     /*the second label is a vector too*/
     if (check_vector_second != 0)
