@@ -32,7 +32,7 @@ void Assembler::printCurrentTupleList(void)
 void Assembler::writeAssembledFile(void)
 {
     //std::cout << "_____________________"<<std::endl;
-    std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".o";;
+    std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".obj";;
 
     std::fstream output;
     output.open(pre_filename,std::ios::out );
@@ -932,7 +932,7 @@ void Assembler::assemble(void)
         std::cout<<"Running assembler second pass..."<<std::endl;
         secondPass();
         std::cout<<"Second pass completed successfuly!"<<std::endl;
-        printCurrentTupleList();
+        //printCurrentTupleList();
         writeAssembledFile();    
     } catch(std::string errmsg)
     {

@@ -24,6 +24,62 @@ void PreProcessor::printFile(std::fstream *source)
     source->seekp( 0, source->beg);
 }
 
+void PreProcessor::printTupleListFile()
+{
+    std::cout << "_____________________"<<std::endl;
+    std::fstream output;
+    output.open("test.pre",std::ios::out );
+    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
+    {
+        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
+        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ ){
+            auto aux = std::get<1>(this->file_being_processed[i])[j];
+            std::cout << aux << " ";
+            output << aux<< " ";
+        }
+        std::cout << std::endl;
+        output<<std::endl;
+    } 
+    output.close();
+    std::cout << "_____________________"<<std::endl;
+}
+
+void PreProcessor::printMDT()
+{
+    std::cout << "_____________________\nMDT"<<std::endl;
+    
+    for(size_t i = 0; i != this->mdt.size(); i++ )
+    {
+        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->mdt[i])+1 << " ";
+        for(size_t j = 0; j != std::get<1>(this->mdt[i]).size(); j++ )
+                std::cout << std::get<1>(this->mdt[i])[j] << " ";
+        std::cout << std::endl;
+    } 
+    std::cout << "MDT\n_____________________"<<std::endl;
+}
+
+void PreProcessor::printMNT()
+{
+    std::cout << "___________________MNT\n"<<std::endl;
+    
+    for(size_t i = 0; i != this->mnt.size(); i++ )
+        std::cout<<std::get<0>(this->mnt[i])<<" "<<(int)std::get<1>(this->mnt[i])<<" "<<(int)std::get<2>(this->mnt[i])<<std::endl; 
+    std::cout << "MNT\n___________________"<<std::endl;
+    
+}
+
+void PreProcessor::printTupleTable(Table tuple_table)
+{
+    std::cout << "_____________________"<<std::endl;
+    for(size_t i = 0; i != tuple_table.size(); i++ )
+    {
+        std::cout << std::get<0>(tuple_table[i]) << " = " << std::get<1>(tuple_table[i]) << std::endl;
+    } 
+    std::cout << "_____________________"<<std::endl;
+
+}
+
+
 std::vector<uint16_t> PreProcessor::findCharInStringIndexes(std::string sample, char character_to_find)
 {
     std::vector<uint16_t> character_indexes;
@@ -109,83 +165,21 @@ TupleList PreProcessor::removeUselessInfos(void)
 
 void PreProcessor::writePreProcessedFile(void)
 {
-    //std::cout << "_____________________"<<std::endl;
     std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".pre";;
-
     std::fstream output;
     output.open(pre_filename,std::ios::out );
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
-        //std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
         for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ ){
             auto aux = std::get<1>(this->file_being_processed[i])[j];
-            //std::cout << aux << " ";
             output << aux<< " ";
         }
-        //std::cout << std::endl;
         output<<std::endl;
     } 
     output.close();
-
     std::cout << "Pre-processed file written successfully!"<<std::endl;
 }
 
-void PreProcessor::printTupleListFile()
-{
-    std::cout << "_____________________"<<std::endl;
-    std::fstream output;
-    output.open("test.pre",std::ios::out );
-    for(size_t i = 0; i != this->file_being_processed.size(); i++ )
-    {
-        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
-        for(size_t j = 0; j != std::get<1>(this->file_being_processed[i]).size(); j++ ){
-            auto aux = std::get<1>(this->file_being_processed[i])[j];
-            std::cout << aux << " ";
-            output << aux<< " ";
-        }
-        std::cout << std::endl;
-        output<<std::endl;
-    } 
-    output.close();
-    std::cout << "_____________________"<<std::endl;
-}
-
-
-void PreProcessor::printMDT()
-{
-    std::cout << "_____________________\nMDT"<<std::endl;
-    
-    for(size_t i = 0; i != this->mdt.size(); i++ )
-    {
-        std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->mdt[i])+1 << " ";
-        for(size_t j = 0; j != std::get<1>(this->mdt[i]).size(); j++ )
-                std::cout << std::get<1>(this->mdt[i])[j] << " ";
-        std::cout << std::endl;
-    } 
-    std::cout << "MDT\n_____________________"<<std::endl;
-}
-
-
-void PreProcessor::printMNT()
-{
-    std::cout << "___________________MNT\n"<<std::endl;
-    
-    for(size_t i = 0; i != this->mnt.size(); i++ )
-        std::cout<<std::get<0>(this->mnt[i])<<" "<<(int)std::get<1>(this->mnt[i])<<" "<<(int)std::get<2>(this->mnt[i])<<std::endl; 
-    std::cout << "MNT\n___________________"<<std::endl;
-    
-}
-
-void PreProcessor::printTupleTable(Table tuple_table)
-{
-    std::cout << "_____________________"<<std::endl;
-    for(size_t i = 0; i != tuple_table.size(); i++ )
-    {
-        std::cout << std::get<0>(tuple_table[i]) << " = " << std::get<1>(tuple_table[i]) << std::endl;
-    } 
-    std::cout << "_____________________"<<std::endl;
-
-}
 Table PreProcessor::parseDirectiveEQU(void)
 {
     Table equs;
@@ -235,6 +229,7 @@ void PreProcessor::processEQUs(void)
 
 void PreProcessor::processIFs(void)
 {
+    std::string errmsg;
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
         if(std::get<1>(this->file_being_processed[i])[0] == "IF")
@@ -248,8 +243,10 @@ void PreProcessor::processIFs(void)
                 this->file_being_processed.erase(this->file_being_processed.begin()+(i--)+1);
             }else
             {
-                std::cout<<"Error: IF of line : "<<std::get<0>(this->file_being_processed[i]) + 1<<" in original source code, condition is not 0 nor 1 (or condition is not defined before) : ";
-                std::cout << std::get<1>(this->file_being_processed[i])[1] << std::endl;
+                errmsg = "Syntactic Error: IF of line ondition is not 0 nor 1 (or condition is not defined before) -> line" +\
+                     std::to_string(i+1) +" of preprocessed AND line "+\
+                     std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+                throw errmsg;
             }
         }
     }
@@ -307,13 +304,20 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
                             else if (should_be_a_comma && ELEMENT_FBP(1,i)[j][0] == ',')
                                 n_commas++;   
                             else
-                                std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Invalid argument" << std::endl;
+                            {
+                                errmsg = "Syntactic Error: Invalid argument -> line " +\
+                                    std::to_string(i+1) +" of preprocessed AND line "+\
+                                    std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+                                throw errmsg;
+                            }
                             should_be_a_comma = !should_be_a_comma;
                         }
                         else
                         {
-                            std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Repeated parameter" << std::endl;
-                            break;
+                            errmsg = "Semantic Error: Repeated parameter -> line " +\
+                                    std::to_string(i+1) +" of preprocessed AND line "+\
+                                    std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+                            throw errmsg;
                         }                    
                     }
                 }
@@ -331,19 +335,38 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
                 {
                     throw errmsg;
                 }
-                
                 return 1;
             }
             else
-                std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Repeated label" << std::endl;
+            {
+                errmsg = "SemanticError: Repeated label -> line " +\
+                        std::to_string(i+1) +" of preprocessed AND line "+\
+                        std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+                throw errmsg;
+            }
         }
         else
-            std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Invalid directive" << std::endl;
+        {
+            errmsg = "Error: Invalid directive -> line " +\
+                    std::to_string(i+1) +" of preprocessed AND line "+\
+                    std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+            throw errmsg;
+        }
     }
     else if (number_of_tokens > MAX_MACRO)
-        std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Invalid argument" << std::endl;
+    {
+        errmsg = "Error: Invalid argument " +\
+                std::to_string(i+1) +" of preprocessed AND line "+\
+                std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+        throw errmsg;
+    }
     else
-        std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, i)+1 << ": Error: Missing macro label" << std::endl;    
+    {
+        errmsg = ": Error: Missing macro label " +\
+                std::to_string(i+1) +" of preprocessed AND line "+\
+                std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
+        throw errmsg;
+    }
     return 0;
 }
 
@@ -373,25 +396,26 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
             }
         }
     }
-                std::cout << "b1 " << std::endl;
     this->mdt.push_back(this->file_being_processed[pos]);  
-                std::cout << "b2 " << std::endl;
     this->file_being_processed.erase(this->file_being_processed.begin()+pos);
-                std::cout << "b3 " << std::endl;
 }
 
 bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
 {
+    std::string errmsg;
     auto n_arguments = std::get<1>(this->mnt[position_macro]);
     auto n_commas = 0;
     if (n_arguments > 0)
         n_commas = n_arguments - 1;
     if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas) != (n_arguments)  )
     {
-        std::cout << std::setfill('0') << std::setw(3) << ELEMENT_FBP(0, line)+1 << ": Error: Number of arguments invalid" << std::endl;
-        return 0;
+        std::cout << ": Error: Number of arguments invalid-> line " 
+                    << std::to_string(line+1) << " of preprocessed AND line " 
+                    << std::to_string(std::get<0>(this->file_being_processed[line])+1) 
+                    << " of original source code." << std::endl;
+        throw errmsg;
     }
-        
+    
     auto macro_body_start = std::get<2>(this->mnt[position_macro]);
     
     std::vector<std::string> arg, name_arg;
@@ -400,9 +424,10 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
         arg.push_back(  ("#" + std::to_string(j))  );
         name_arg.push_back(  ELEMENT_FBP(1, line)[( (j<<1) + 1 )]  );
     }
+    
     this->file_being_processed.erase(this->file_being_processed.begin() + line);
     for (size_t i = 0; std::get<1>(this->mdt[macro_body_start+i])[0] != "END" ; i++)
-    {   
+    {  
         this->file_being_processed.insert(this->file_being_processed.begin()+line+i, this->mdt[macro_body_start+i]);    
         for (size_t k = 0; k < n_arguments; k++)
         {
@@ -411,7 +436,7 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
             {   
                 *find_parameter = name_arg[k];
                 find_parameter =std::find(ELEMENT_FBP(1, (line+i) ).begin(), ELEMENT_FBP(1, (line+i) ).end(), arg[k]);
-            }   
+            }
         }
     }
     return 1;
@@ -423,8 +448,9 @@ void PreProcessor::processMacros(void)
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
         auto is_it_a_macro = std::find(ELEMENT_FBP(1, i).begin(), ELEMENT_FBP(1, i).end(), "MACRO");
+        
         if (is_it_a_macro != ELEMENT_FBP(1, i).end())
-        {
+        { 
             try
             {
                 if (PreProcessor::insertInMacroNameTable(i, (is_it_a_macro - ELEMENT_FBP(1, i).begin())))
@@ -435,14 +461,23 @@ void PreProcessor::processMacros(void)
             {
                 throw errmsg;
             }
-            
         }
-        
         std::string first_token = ELEMENT_FBP(1,i)[0];
         auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
+        
         if (is_this_macro_label != this->mnt.end())
-            if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
-                i--;
+        {
+            try
+            {
+                if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
+                    if (i!=0)
+                        i--;
+            }
+            catch(std::string errmsg)
+            {
+                throw errmsg;
+            }    
+        }    
     } 
 }
 
