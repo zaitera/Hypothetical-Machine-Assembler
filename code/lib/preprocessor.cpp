@@ -280,6 +280,8 @@ void PreProcessor::removeComments(void)
 
 bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro) 
 {
+    std::string errmsg;
+    
     size_t number_of_tokens = ELEMENT_FBP(1, i).size();
     if ((number_of_tokens >= MIN_MACRO) && (number_of_tokens <= MAX_MACRO))
     {
@@ -321,7 +323,15 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
                 std::tuple<std::string, uint8_t,uint8_t> element_mnt(ELEMENT_FBP(1, i)[0], (number_of_tokens-MIN_MACRO-(int)n_commas), this->mdt.size());
                 this->mnt.push_back(element_mnt);
                 this->file_being_processed.erase(this->file_being_processed.begin()+i);
-                PreProcessor::insertInMacroDefinitionTable(i, arguments);
+                try
+                {
+                    PreProcessor::insertInMacroDefinitionTable(i, arguments);
+                }
+                catch(std::string errmsg)
+                {
+                    throw errmsg;
+                }
+                
                 return 1;
             }
             else
@@ -339,8 +349,18 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
 
 void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::string> arg)
 {
+    std::string errmsg;
     while (ELEMENT_FBP(1, pos)[0] != "END")
     {
+        if (pos == this->file_being_processed.size())
+        {
+            std::cout << "Error: Missing 'end' directive indicating end of a macro -> line " 
+                        << std::to_string(pos+1) << " of preprocessed AND line " 
+                        << std::to_string(std::get<0>(this->file_being_processed[pos])+1) 
+                        << " of original source code." << std::endl;
+            throw errmsg;
+        }
+
         this->mdt.push_back(this->file_being_processed[pos]);  
         this->file_being_processed.erase(this->file_being_processed.begin()+pos);
         for (size_t i = 0; i < arg.size(); i++)
@@ -353,8 +373,11 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
             }
         }
     }
+                std::cout << "b1 " << std::endl;
     this->mdt.push_back(this->file_being_processed[pos]);  
+                std::cout << "b2 " << std::endl;
     this->file_being_processed.erase(this->file_being_processed.begin()+pos);
+                std::cout << "b3 " << std::endl;
 }
 
 bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
@@ -396,13 +419,24 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
 
 void PreProcessor::processMacros(void)
 {
+    std::string errmsg;
     for(size_t i = 0; i != this->file_being_processed.size(); i++ )
     {
         auto is_it_a_macro = std::find(ELEMENT_FBP(1, i).begin(), ELEMENT_FBP(1, i).end(), "MACRO");
         if (is_it_a_macro != ELEMENT_FBP(1, i).end())
-            if (PreProcessor::insertInMacroNameTable(i, (is_it_a_macro - ELEMENT_FBP(1, i).begin())))
-                if (i!=0)
-                    i--;
+        {
+            try
+            {
+                if (PreProcessor::insertInMacroNameTable(i, (is_it_a_macro - ELEMENT_FBP(1, i).begin())))
+                    if (i!=0)
+                        i--;
+            }
+            catch(std::string errmsg)
+            {
+                throw errmsg;
+            }
+            
+        }
         
         std::string first_token = ELEMENT_FBP(1,i)[0];
         auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
@@ -414,13 +448,21 @@ void PreProcessor::processMacros(void)
 
 TupleList PreProcessor::preProcess(void)
 {
+    std::string errmsg;
     std::cout<<"Pre-processing file..."<<std::endl;
-    this->file_being_processed = removeUselessInfos(); 
-    removeComments();
-    this->table_EQU = parseDirectiveEQU();
-    processEQUs();
-    processIFs();
-    processMacros();
-    writePreProcessedFile();
+    try
+    {
+        this->file_being_processed = removeUselessInfos(); 
+        removeComments();
+        this->table_EQU = parseDirectiveEQU();
+        processEQUs();
+        processIFs();
+        processMacros();
+        writePreProcessedFile();
+    }
+    catch(std::string errmsg)
+    {
+        throw errmsg;
+    }
     return  this->file_being_processed;
 }

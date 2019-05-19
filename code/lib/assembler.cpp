@@ -870,7 +870,7 @@ void Assembler::allocateMemorySpace()
             else
                 value_decimal = std::stoi(value);
             if (value_decimal != ((value_decimal<<16)>>16) )
-                std::cout << "Warning: Overflow detection in const statement. The pseudo-assembly is 16 bits" 
+                std::cout << "Warning: Overflow detection in const statement. The pseudo-assembly is 16 bits -> line " 
                         << std::to_string(i+1) << " of preprocessed AND line " 
                         << std::to_string(std::get<0>(this->file_being_assembled[i])+1) 
                         << " of original source code." << std::endl;
@@ -921,10 +921,10 @@ void Assembler::secondPass(void)
 
 void Assembler::assemble(void)
 {
-    PreProcessor pre_processor(this->source_code_file);
-    pre_processor.file_name = this->file_name;
-    this->file_being_assembled = pre_processor.preProcess();
     try{
+        PreProcessor pre_processor(this->source_code_file);
+        pre_processor.file_name = this->file_name;
+        this->file_being_assembled = pre_processor.preProcess();
         std::cout<<"Running assembler first pass..."<<std::endl;
         firstPass();
         std::cout<<"First pass completed successfuly!"<<std::endl;
