@@ -661,7 +661,7 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
                 }
             }
         }
-        else if (opcode == inst_opcodes_MP.at("INPUT"))
+        else if (opcode == inst_opcodes_MP.at("INPUT") || opcode == inst_opcodes_MP.at("STORE"))
         {
             /*Check if there is an attempt to write to const*/
             if(line_label[2] == "CONST")
