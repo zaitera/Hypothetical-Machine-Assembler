@@ -337,14 +337,18 @@ Section Assembler::sectionAnalysis(std::string str)
     }
 }
 
-bool Assembler::isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line)
+bool Assembler::isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line, std::vector<std::string> line)
 {
-    bool condition;
+    bool condition, found_plus = false;
     
     switch (inst_size)
     {
         case 4:
-            if (present_in_line == 4 || present_in_line == 6 || present_in_line == 8 )
+            if (std::find(line.begin(), line.end(),"+")!=line.end())
+            {
+                found_plus = true;
+            }
+            if ((present_in_line == 4 && !found_plus) || present_in_line == 6 || present_in_line == 8 )
             {
                 condition = false;
             }else
@@ -440,7 +444,7 @@ void Assembler::firstPass(void)
                 auto mem_spaces =  this->mem_spaces_MP.at(line[current_token]);
                 auto aux = (line[current_token] == "COPY")? mem_spaces+1:mem_spaces;
 
-                if (isParametersNumberValid(aux, line.size()-current_token))
+                if (isParametersNumberValid(aux, line.size()-current_token, line))
                 {                
                     errmsg = "Syntactic error: »'"+line[current_token]+"' instruction format or amount of parameter is invalid (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
@@ -716,7 +720,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         /*if the first label was not declared as vector*/
         if (line_first_label.size() == 3)
         {
-            errmsg = "Semantic error: Memory position was not declared as vector -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            errmsg = "Semantic error: Memory position was not declared as vector -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
         }
         auto size_vector = line_first_label[3];
