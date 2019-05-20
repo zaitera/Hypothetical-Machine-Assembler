@@ -157,10 +157,13 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
         if (c == 'X' && iterator >0 && instruction[iterator-1] == '0')
         {
             found_x = true;
+            iterator++;
             continue;
         }
+        
         if (c == '-' && iterator == 0)
         {
+            iterator++;
             continue;
         }
         
