@@ -513,7 +513,7 @@ void PreProcessor::processMacros(void)
         auto cout = 1;
         if (ELEMENT_FBP(1,i).size()>2)
             cout = 2;
-        for (size_t j = 0; j <= cout; j+=2)
+        for (uint16_t j = 0; j <= cout; j+=2)
         {
             std::string first_token = ELEMENT_FBP(1,i)[j];
             auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
