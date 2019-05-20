@@ -79,7 +79,7 @@ private:
     void labelLexicalAnalysis(std::string label);
     void instructionSintax(std::vector<std::string> aux);
     void lexicalAnalyzer(std::string, TokenType);
-    bool isParametersNumberValid(uint16_t, uint16_t, std::vector<std::string> );
+    bool isParametersNumberInvalid(uint16_t, uint16_t, std::vector<std::string> );
     void firstPass(void);
     void secondPass(void);
 

@@ -337,7 +337,7 @@ Section Assembler::sectionAnalysis(std::string str)
     }
 }
 
-bool Assembler::isParametersNumberValid(uint16_t inst_size, uint16_t present_in_line, std::vector<std::string> line)
+bool Assembler::isParametersNumberInvalid(uint16_t inst_size, uint16_t present_in_line, std::vector<std::string> line)
 {
     bool condition, found_plus = false;
     
@@ -444,7 +444,7 @@ void Assembler::firstPass(void)
                 auto mem_spaces =  this->mem_spaces_MP.at(line[current_token]);
                 auto aux = (line[current_token] == "COPY")? mem_spaces+1:mem_spaces;
 
-                if (isParametersNumberValid(aux, line.size()-current_token, line))
+                if (isParametersNumberInvalid(aux, line.size()-current_token, line))
                 {                
                     errmsg = "Syntactic error: »'"+line[current_token]+"' instruction format or amount of parameter is invalid (requires "+std::to_string(mem_spaces-1)+" parameters) -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                     throw errmsg;
