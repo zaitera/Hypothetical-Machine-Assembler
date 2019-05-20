@@ -467,9 +467,17 @@ void PreProcessor::processMacros(void)
         {
             try
             {
+                std::cout<<"a1:"<< std::endl;
                 if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
-                    if (i!=0)
+                {
+
+                std::cout<<"a2:"<< std::endl;
+                if (i!=0)
                         i--;
+                }    
+                    
+                
+                std::cout<<"a3:"<< std::endl;
             }
             catch(std::string errmsg)
             {

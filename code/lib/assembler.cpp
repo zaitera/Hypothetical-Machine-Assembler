@@ -73,6 +73,13 @@ void Assembler::labelLexicalAnalysis(std::string label)
 }
 void Assembler::instLexicalAnalysis(std::string instruction)
 {
+    if (instruction == "CONST" || instruction == "SPACE")
+    {
+        std::string msg("Semantic Error: ");
+        msg = msg + instruction +\
+                    " directive out of 'SECTION DATA' or missing 'SECTION DATA'";
+        throw msg;
+    }
     if(inst_opcodes_MP.count(instruction)==0)
     {
         std::string msg("Lexical error: »'");                
@@ -82,6 +89,12 @@ void Assembler::instLexicalAnalysis(std::string instruction)
 }
 void Assembler::dataDirectiveLexicalAnalysis(std::string directive)
 {
+    if(inst_opcodes_MP.count(directive)!=0)
+    {
+        std::string msg("Semantic Error: '");                
+        msg = msg + directive + " out of 'SECTION TEXT'";
+        throw msg;
+    }
     if(directive!="SPACE" && directive != "CONST" )
     {
         std::string msg("Lexical error: »'");                
@@ -383,6 +396,13 @@ void Assembler::firstPass(void)
             }
             continue;
         }
+        if (line.size()>1)
+            if (line[1] == "CONST" || line[1] == "SPACE")
+            {
+                std::cout << "WARNING: 'SPACE' or 'CONST' directive out of 'SECTION DATA' or missing 'SECTION DATA' -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                section = DATA;
+            }
+
         if (section == UNDEFINED)
         {
             errmsg = "Semantic error: program running on undefined section -> in line "+ std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
@@ -560,14 +580,13 @@ void Assembler::semanticAnalyzerVectors(std::vector<std::string> line, size_t i)
     {
         if (THIS_IS_A_VECTOR(line.size()))
         {
-            auto size_vector = std::get<1>(this->file_being_assembled[pos_memory_label.second])[3];
-            
             /*check if label was not declared as vector*/
             if (std::get<1>(this->file_being_assembled[pos_memory_label.second]).size() == 3)
             {
                 errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                 throw errmsg;
             }
+            auto size_vector = std::get<1>(this->file_being_assembled[pos_memory_label.second])[3];
             
             /*check for index underflow segmentation fault*/
             if (std::stoi(line[3]) < 0)
@@ -666,14 +685,14 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         errmsg = "Semantic error: missing label of first argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-
+    
     /*Check if first label points to data*/
     if(this->symbols_table_MP.at(label).second < this->memory_positions_counted)
     {
         errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-
+    
     /*check if the first label is a vector*/
     if(line[2] == "+")
         pos_second_label = 5;
@@ -684,36 +703,38 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         errmsg = "Semantic error: missing label of second argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-
+    
     /*Check if second label points to data*/
     if(this->symbols_table_MP.at(line[pos_second_label]).second < this->memory_positions_counted)
     {
         errmsg = "Semantic error: Invalid argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
-
     /*if the first label is a vector*/
     if(pos_second_label == 5)
     {
-        auto size_vector = line_first_label[3];
         /*if the first label was not declared as vector*/
         if (line_first_label.size() == 3)
         {
             errmsg = "Semantic error: Memory position was not declared as vector -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
         }
+        auto size_vector = line_first_label[3];
+        
         /*check for index underflow segmentation fault*/
         if (std::stoi(line[3]) < 0)
         {
             errmsg = "Semantic error: Attempt to access a position not reserved by SPACE using negative parameter -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;
         }
+    
         /*check for index overflow segmentation fault*/
         if (std::stoi(line[3]) >= std::stoi(size_vector))
         {
             errmsg = "Semantic error: Attempt to access a position not reserved by SPACE -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;
         }
+    
         /*check if the second label is a vector too*/
         if ((uint16_t)line.size() > pos_second_label+1)
             check_vector_second = 7;
@@ -724,7 +745,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
         if ((uint16_t)line.size()>mem_spaces+1)
             check_vector_second = 5;
     }
-
+    
      /*Check if second label is a CONST*/
     if(std::get<1>(this->file_being_assembled[this->symbols_table_MP.at(\
             line[pos_second_label]).second])[2] == "CONST")
