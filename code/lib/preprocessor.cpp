@@ -243,7 +243,7 @@ void PreProcessor::processIFs(void)
                 this->file_being_processed.erase(this->file_being_processed.begin()+(i--)+1);
             }else
             {
-                errmsg = "Syntactic Error: IF of line ondition is not 0 nor 1 (or condition is not defined before) -> line" +\
+                errmsg = "Syntactic Error: IF condition is not 0 nor 1 (or condition is not defined before) -> line" +\
                      std::to_string(i+1) +" of preprocessed AND line "+\
                      std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
                 throw errmsg;
