@@ -159,6 +159,11 @@ void Assembler::constValLexicalAnalysis(std::string instruction)
             found_x = true;
             continue;
         }
+        if (c == '-' && iterator == 0)
+        {
+            continue;
+        }
+        
         if (found_x)
         {
             if(!isxdigit(c))
