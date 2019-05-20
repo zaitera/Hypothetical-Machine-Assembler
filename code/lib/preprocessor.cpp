@@ -377,10 +377,8 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
     {
         if (pos == this->file_being_processed.size())
         {
-            std::cout << "Error: Missing 'end' directive indicating end of a macro -> line " 
-                        << std::to_string(pos+1) << " of preprocessed AND line " 
-                        << std::to_string(std::get<0>(this->file_being_processed[pos])+1) 
-                        << " of original source code." << std::endl;
+            errmsg = "Error: Missing 'end' directive indicating end of a macro -> line " +\
+                        std::to_string(pos+1) + " of preprocessed.";
             throw errmsg;
         }
 

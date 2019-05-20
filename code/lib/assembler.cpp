@@ -31,21 +31,16 @@ void Assembler::printCurrentTupleList(void)
 }
 void Assembler::writeAssembledFile(void)
 {
-    //std::cout << "_____________________"<<std::endl;
     std::string pre_filename = this->file_name.substr(0,this->file_name.find_last_of('.'))+".obj";;
 
     std::fstream output;
     output.open(pre_filename,std::ios::out );
     for(size_t i = 0; i != this->file_being_assembled.size(); i++ )
     {
-        //std::cout << std::setfill('0') << std::setw(3) << std::get<0>(this->file_being_processed[i])+1 << " ";
         for(size_t j = 0; j != std::get<1>(this->file_being_assembled[i]).size(); j++ ){
             auto aux = std::get<1>(this->file_being_assembled[i])[j];
-            //std::cout << aux << " ";
             output << aux<< " ";
         }
-        //std::cout << std::endl;
-        //output<<std::endl;
     } 
     output.close();
 
@@ -594,9 +589,7 @@ void Assembler::semanticAnalyzerVectors(std::vector<std::string> line, size_t i)
 void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
 {
     std::string errmsg;
-    auto opcode = this->inst_opcodes_MP.at(line[0]);
-    auto pos_memory_label = this->symbols_table_MP.at(line[1]);
-
+    
     /*Check if label has been declared*/
     if( this->symbols_table_MP.count(line[1]) == 0)
     {
@@ -604,12 +597,16 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
         throw errmsg;   
     }
 
+    auto opcode = this->inst_opcodes_MP.at(line[0]);
+    auto pos_memory_label = this->symbols_table_MP.at(line[1]);
+
+
     if (THIS_IS_A_JUMP(opcode))
     {
         /*Check if label points to data*/
         if(pos_memory_label.second >= this->memory_positions_counted)
         {
-            errmsg = "Semantic error: Jump to invalid section -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            errmsg = "Semantic error: Jump to invalid section -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
         }
     }
@@ -620,17 +617,25 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
         /*Check if label points to data*/
         if(pos_memory_label.second < this->memory_positions_counted)
         {
-            errmsg = "Semantic error: Invalid argument -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+            errmsg = "Semantic error: Invalid argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
             throw errmsg;   
         }
     
         if (opcode == inst_opcodes_MP.at("DIV"))
         {
             /*Check if there is an attempt to divide by zero*/
-            if(line_label[2] == "CONST" && std::stoi(line_label[3]) == 0)
+            if(line_label[2] == "CONST") 
             {
-                errmsg = "Semantic error: Attempt to divide by zero -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
-                throw errmsg;   
+                int value_const;
+                if (line_label[3][1] == 'X')
+                    value_const = (int) std::stoul(line_label[3], nullptr, 16);
+                else
+                    value_const = std::stoi(line_label[3]);
+                if(value_const == 0)
+                {
+                    errmsg = "Semantic error: Attempt to divide by zero -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                    throw errmsg;   
+                }
             }
         }
         else if (opcode == inst_opcodes_MP.at("INPUT"))
@@ -638,7 +643,7 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
             /*Check if there is an attempt to write to const*/
             if(line_label[2] == "CONST")
             {
-                errmsg = "Semantic error: Attempt to change a constant value -> line" + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+                errmsg = "Semantic error: Attempt to change a constant value -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
                 throw errmsg;   
             }
         }       
@@ -899,10 +904,8 @@ void Assembler::secondPass(void)
 
         /*mnemonic is replaced by opcode in the second pass for reasons of optimization*/
         CHANGE_MNEMONIC_BY_OPCODE(i);
-
         /*Stop has no operand, so second pass can ignore it*/
         if (line[0]=="STOP") continue;
-        
         try
         {
             semanticAnalyzer(line, i);
@@ -911,7 +914,7 @@ void Assembler::secondPass(void)
         {
             throw errmsg;
         }
-        swapLabelbyAddress(line, i);        
+        swapLabelbyAddress(line, i);      
     }
     
     allocateMemorySpace();
