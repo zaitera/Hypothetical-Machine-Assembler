@@ -403,11 +403,18 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
     std::string errmsg;
     auto n_arguments = std::get<1>(this->mnt[position_macro]);
     auto n_commas = 0;
+    int qtd_plus = 0;
     if (n_arguments > 0)
         n_commas = n_arguments - 1;
-    if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas) != (n_arguments)  )
+    for (uint i = 0 ; i < std::get<1>(this->file_being_processed[line]).size() ; i ++)
     {
-        std::cout << ": Error: Number of arguments invalid-> line " 
+        if (std::get<1>(this->file_being_processed[line])[i] == "+")
+            qtd_plus++;
+    }
+    
+    if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas - 2*qtd_plus) != (n_arguments)  )
+    {
+        std::cout << "Error: Number of arguments invalid-> line " 
                     << std::to_string(line+1) << " of preprocessed AND line " 
                     << std::to_string(std::get<0>(this->file_being_processed[line])+1) 
                     << " of original source code." << std::endl;
@@ -416,13 +423,26 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
     
     auto macro_body_start = std::get<2>(this->mnt[position_macro]);
     
-    std::vector<std::string> arg, name_arg;
+    std::vector<std::string> arg, token_arg;
+    std::vector<std::vector<std::string>> name_arg;
+    int aux = 0;
     for (size_t j = 0; j < n_arguments; j++)
     {
         arg.push_back(  ("#" + std::to_string(j))  );
-        name_arg.push_back(  ELEMENT_FBP(1, line)[( (j<<1) + 1 )]  );
+        token_arg.push_back(  ELEMENT_FBP(1, line)[( (j<<1) + 1 + aux )]  );
+        int aux2 = 0;
+        for (size_t k = 2; (( (j<<1) + k + aux)) < ELEMENT_FBP(1, line).size(); k++)
+        { 
+            if (ELEMENT_FBP(1, line)[( (j<<1) + k + aux)] == ",") 
+                break;
+            token_arg.push_back(  ELEMENT_FBP(1, line)[( (j<<1) + k + aux)] );
+            aux2++;  
+        }
+        if (aux2 > 0)
+            aux = aux2;
+        name_arg.push_back(token_arg);
+        token_arg.clear();
     }
-    
     this->file_being_processed.erase(this->file_being_processed.begin() + line);
     for (size_t i = 0; std::get<1>(this->mdt[macro_body_start+i])[0] != "END" ; i++)
     {  
@@ -430,9 +450,15 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
         for (size_t k = 0; k < n_arguments; k++)
         {
             auto find_parameter=std::find(ELEMENT_FBP(1, (line+i) ).begin(), ELEMENT_FBP(1, (line+i) ).end(), arg[k]);
+            // Get index of element from iterator
+            int index = std::distance(ELEMENT_FBP(1, (line+i) ).begin(), find_parameter);
+
             while (find_parameter != ELEMENT_FBP(1, (line+i) ).end())
             {   
-                *find_parameter = name_arg[k];
+                *find_parameter = name_arg[k][0];
+
+                for (size_t t = 1; t < name_arg[k].size() ; t ++)
+                    ELEMENT_FBP(1, (line+i) ).insert(ELEMENT_FBP(1, (line+i) ).begin()+index+t, name_arg[k][t]);
                 find_parameter =std::find(ELEMENT_FBP(1, (line+i) ).begin(), ELEMENT_FBP(1, (line+i) ).end(), arg[k]);
             }
         }
@@ -468,13 +494,8 @@ void PreProcessor::processMacros(void)
             try
             {
                 if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
-                {
-
-                if (i!=0)
+                 if (i!=0)
                         i--;
-                }    
-                    
-                
             }
             catch(std::string errmsg)
             {
