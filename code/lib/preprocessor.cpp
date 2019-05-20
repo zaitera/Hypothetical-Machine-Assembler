@@ -339,7 +339,7 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
             }
             else
             {
-                errmsg = "SemanticError: Repeated label -> line " +\
+                errmsg = "Semantic Error: Repeated label -> line " +\
                         std::to_string(i+1) +" of preprocessed AND line "+\
                         std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
                 throw errmsg;
@@ -347,7 +347,7 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
         }
         else
         {
-            errmsg = "Error: Invalid directive -> line " +\
+            errmsg = "Semantic Error: Invalid directive -> line " +\
                     std::to_string(i+1) +" of preprocessed AND line "+\
                     std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
             throw errmsg;
@@ -355,14 +355,14 @@ bool PreProcessor::insertInMacroNameTable(size_t i, size_t position_macro)
     }
     else if (number_of_tokens > MAX_MACRO)
     {
-        errmsg = "Error: Invalid argument " +\
+        errmsg = "Syntactic Error: Invalid argument " +\
                 std::to_string(i+1) +" of preprocessed AND line "+\
                 std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
         throw errmsg;
     }
     else
     {
-        errmsg = ": Error: Missing macro label " +\
+        errmsg = ": Semantic Error: Missing macro label " +\
                 std::to_string(i+1) +" of preprocessed AND line "+\
                 std::to_string(std::get<0>(this->file_being_processed[i])+1)+" of original source code.";
         throw errmsg;
@@ -377,7 +377,7 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
     {
         if (pos == this->file_being_processed.size())
         {
-            errmsg = "Error: Missing 'end' directive indicating end of a macro -> line " +\
+            errmsg = "Semantic Error: Missing 'end' directive indicating end of a macro -> line " +\
                         std::to_string(pos+1) + " of preprocessed.";
             throw errmsg;
         }
@@ -401,18 +401,32 @@ void PreProcessor::insertInMacroDefinitionTable(size_t pos, std::vector<std::str
 bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
 {
     std::string errmsg;
+    
     auto n_arguments = std::get<1>(this->mnt[position_macro]);
     auto n_commas = 0;
     int qtd_plus = 0;
+    bool label = 0;
+    std::vector<std::string> saved_label;
+    
     if (n_arguments > 0)
         n_commas = n_arguments - 1;
+    if (std::get<1>(this->file_being_processed[line])[1] == ":")
+    {
+        saved_label.push_back(std::get<1>(this->file_being_processed[line])[0]);
+        saved_label.push_back(std::get<1>(this->file_being_processed[line])[1]);
+        std::get<1>(this->file_being_processed[line]).erase(\
+                std::get<1>(this->file_being_processed[line]).begin(),\
+                std::get<1>(this->file_being_processed[line]).begin()+2);
+        label = 1;
+    }
+    
     for (uint i = 0 ; i < std::get<1>(this->file_being_processed[line]).size() ; i ++)
     {
         if (std::get<1>(this->file_being_processed[line])[i] == "+")
-            qtd_plus++;
+        qtd_plus++;
     }
     
-    if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas - 2*qtd_plus) != (n_arguments)  )
+    if (  (std::get<1>(this->file_being_processed[line]).size() - 1 - n_commas - 2*(qtd_plus)) != (n_arguments)  )
     {
         std::cout << "Error: Number of arguments invalid-> line " 
                     << std::to_string(line+1) << " of preprocessed AND line " 
@@ -456,12 +470,18 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
             while (find_parameter != ELEMENT_FBP(1, (line+i) ).end())
             {   
                 *find_parameter = name_arg[k][0];
-
                 for (size_t t = 1; t < name_arg[k].size() ; t ++)
                     ELEMENT_FBP(1, (line+i) ).insert(ELEMENT_FBP(1, (line+i) ).begin()+index+t, name_arg[k][t]);
                 find_parameter =std::find(ELEMENT_FBP(1, (line+i) ).begin(), ELEMENT_FBP(1, (line+i) ).end(), arg[k]);
             }
         }
+    }
+    if (label)
+    {
+        ELEMENT_FBP(1, line).insert(\
+                ELEMENT_FBP(1, line).begin(),
+                saved_label.begin(),\
+                saved_label.end());
     }
     return 1;
 }
@@ -486,22 +506,29 @@ void PreProcessor::processMacros(void)
                 throw errmsg;
             }
         }
-        std::string first_token = ELEMENT_FBP(1,i)[0];
-        auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
-        
-        if (is_this_macro_label != this->mnt.end())
+        /*May have a label marking the macro line*/
+        auto cout = 1;
+        if (ELEMENT_FBP(1,i).size()>2)
+            cout = 2;
+        for (size_t j = 0; j <= cout; j+=2)
         {
-            try
+            std::string first_token = ELEMENT_FBP(1,i)[j];
+            auto is_this_macro_label = std::find_if(this->mnt.begin(), this->mnt.end(), [&](const std::tuple<std::string,uint8_t,uint8_t>& e) {return std::get<0>(e) == first_token;});
+            
+            if (is_this_macro_label != this->mnt.end())
             {
-                if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
-                 if (i!=0)
-                        i--;
+                try
+                {
+                    if (PreProcessor::swapLinesMacro(i, (is_this_macro_label - this->mnt.begin())))
+                    if (i!=0)
+                            i--;
+                }
+                catch(std::string errmsg)
+                {
+                    throw errmsg;
+                }    
             }
-            catch(std::string errmsg)
-            {
-                throw errmsg;
-            }    
-        }    
+        } 
     } 
 }
 

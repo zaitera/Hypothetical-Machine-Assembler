@@ -616,7 +616,7 @@ void Assembler::semanticAnalyzerLabel(std::vector<std::string> line, size_t i)
     /*Check if label has been declared*/
     if( this->symbols_table_MP.count(line[1]) == 0)
     {
-        errmsg = "Semantic error:  missing labels -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        errmsg = "Semantic error:  Undefined labels -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
 
@@ -686,7 +686,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
     /*Check if first label has been declared*/
     if( this->symbols_table_MP.count(label) == 0)
     {
-        errmsg = "Semantic error: missing label of first argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        errmsg = "Semantic error: Undefined label of first argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
     
@@ -704,7 +704,7 @@ void Assembler::semanticAnalyzerCopy(std::vector<std::string> line, size_t i)
     /*Check if second label has been declared*/
     if( this->symbols_table_MP.count(line[pos_second_label]) == 0)
     {
-        errmsg = "Semantic error: missing label of second argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
+        errmsg = "Semantic error: Undefined label of second argument -> line " + std::to_string(i+1) +" of preprocessed AND line "+std::to_string(std::get<0>(this->file_being_assembled[i])+1)+" of original source code.";
         throw errmsg;   
     }
     
