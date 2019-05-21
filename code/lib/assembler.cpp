@@ -892,7 +892,6 @@ void Assembler::swapLabelbyAddress(std::vector<std::string> line, size_t vector_
 
 void Assembler::allocateMemorySpace()
 {
-    printCurrentTupleList();
     for(size_t i = this->memory_positions_counted; i != this->file_being_assembled.size(); i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
@@ -914,7 +913,7 @@ void Assembler::allocateMemorySpace()
                         << std::to_string(i+1) << " of preprocessed AND line " 
                         << std::to_string(std::get<0>(this->file_being_assembled[i])+1) 
                         << " of original source code." << std::endl;
-            std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) value_decimal);
+            std::get<1>(this->file_being_assembled[i])[0] = std::to_string((int16_t) value_decimal);
         }
         /*It's a vector*/
         else
