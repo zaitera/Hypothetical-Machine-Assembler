@@ -410,14 +410,17 @@ bool PreProcessor::swapLinesMacro(size_t line, size_t position_macro)
     
     if (n_arguments > 0)
         n_commas = n_arguments - 1;
-    if (std::get<1>(this->file_being_processed[line])[1] == ":")
-    {
-        saved_label.push_back(std::get<1>(this->file_being_processed[line])[0]);
-        saved_label.push_back(std::get<1>(this->file_being_processed[line])[1]);
-        std::get<1>(this->file_being_processed[line]).erase(\
-                std::get<1>(this->file_being_processed[line]).begin(),\
-                std::get<1>(this->file_being_processed[line]).begin()+2);
-        label = 1;
+
+    if (std::get<1>(this->file_being_processed[line]).size()>1){
+        if (std::get<1>(this->file_being_processed[line])[1] == ":")
+        {
+            saved_label.push_back(std::get<1>(this->file_being_processed[line])[0]);
+            saved_label.push_back(std::get<1>(this->file_being_processed[line])[1]);
+            std::get<1>(this->file_being_processed[line]).erase(\
+                    std::get<1>(this->file_being_processed[line]).begin(),\
+                    std::get<1>(this->file_being_processed[line]).begin()+2);
+            label = 1;
+        }
     }
     
     for (uint i = 0 ; i < std::get<1>(this->file_being_processed[line]).size() ; i ++)

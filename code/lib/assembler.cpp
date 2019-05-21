@@ -892,6 +892,7 @@ void Assembler::swapLabelbyAddress(std::vector<std::string> line, size_t vector_
 
 void Assembler::allocateMemorySpace()
 {
+    printCurrentTupleList();
     for(size_t i = this->memory_positions_counted; i != this->file_being_assembled.size(); i++ )
     {
         auto line = std::get<1>(this->file_being_assembled[i]);
@@ -902,8 +903,8 @@ void Assembler::allocateMemorySpace()
         {
             auto value = std::get<1>(this->file_being_assembled[i])[3];
             int value_decimal;
-            if (value[1] == 'X')
-            {
+            if (value.find('X') != std::string::npos)
+            { 
                 value_decimal = (int) std::stoul(value, nullptr, 16);
             }
             else
@@ -914,7 +915,6 @@ void Assembler::allocateMemorySpace()
                         << std::to_string(std::get<0>(this->file_being_assembled[i])+1) 
                         << " of original source code." << std::endl;
             std::get<1>(this->file_being_assembled[i])[0] = std::to_string((uint16_t) value_decimal);
-            
         }
         /*It's a vector*/
         else
