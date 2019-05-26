@@ -21,12 +21,12 @@
 
 ### ISA of our hypothetical machine:  
 <p align="center">
-  <img  src="https://github.com/abdullah-zaiter/Hypothetical-Machine-Assembler/tree/master/docs/SB-repo-instructions.png">
+  <img  src="https://github.com/abdullah-zaiter/Hypothetical-Machine-Assembler/blob/master/docs/SB-repo-intructions.png">
 </p>
 
 ### Other directives of our hypothetical machine:  
 <p align="center">
-  <img  src="https://github.com/abdullah-zaiter/Hypothetical-Machine-Assembler/tree/master/docs/Directives-Rep_SB.png">
+  <img  src="https://github.com/abdullah-zaiter/Hypothetical-Machine-Assembler/blob/master/docs/Directives-Rep_SB.PNG">
 </p>
 
 ### __Requirements__:  
